@@ -1,8 +1,5 @@
 
 export class PrognoseDTO{
-    p1?: number;
-    p2?: number;
-    p3?: number;
     p1PrognoseWoche0?: number;
     p2PrognoseWoche0?: number;
     p3PrognoseWoche0?: number;
