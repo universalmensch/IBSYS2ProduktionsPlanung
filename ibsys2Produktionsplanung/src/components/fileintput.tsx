@@ -1,18 +1,13 @@
-// FileInput.tsx
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { parseString } from 'xml2js';
-import { useGeneralStore } from '../helper/GeneralStoreContext'; // Import the custom hook
-import GeneralStoreDTO from '../dtos/GeneralStoreDTO';
-import { BestellungDTO } from '../dtos/BestellungDTO';
-import { PrognoseDTO } from '../dtos/PrognoseDTO';
+import { useGeneralStore } from '../helper/GeneralStoreContext'; 
 
 import { XMLParser } from 'fast-xml-parser';
 
 
 const FileInput: React.FC = () => {
   const [fileName, setFileName] = useState<string>('No file selected');
-  const { setGeneralStoreData } = useGeneralStore(); // Get the setGeneralStoreData function from context
+  const { setGeneralStoreData } = useGeneralStore(); 
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -23,7 +18,7 @@ const FileInput: React.FC = () => {
         console.log(file)
       } else {
         setFileName('Please select an XML file');
-        event.target.value = ''; // Clear the input if invalid file
+        event.target.value = ''; 
       }
     } else {
       setFileName('No file selected');
@@ -44,8 +39,7 @@ const FileInput: React.FC = () => {
   };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center min-vh-100">
-      <div className="text-center">
+    <>
         <label htmlFor="fileInput" className="btn btn-primary btn-lg">
           Choose a File
           <input
@@ -57,8 +51,7 @@ const FileInput: React.FC = () => {
           />
         </label>
         <p className="mt-3 text-muted">{`Selected file: ${fileName}`}</p>
-      </div>
-    </div>
+      </>
   );
 };
 

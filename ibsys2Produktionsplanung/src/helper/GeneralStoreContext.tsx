@@ -1,10 +1,7 @@
-// GeneralStoreContext.tsx
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 
-// Create the context with default values
 const GeneralStoreContext = createContext<any>(undefined);
 
-// Create a provider component to wrap your app
 export const GeneralStoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [generalStore, setGeneralStore] = useState<any>(null);
 
@@ -19,7 +16,6 @@ export const GeneralStoreProvider: React.FC<{ children: ReactNode }> = ({ childr
   );
 };
 
-// Custom hook to easily use the context
 export const useGeneralStore = (): any => {
   const context = useContext(GeneralStoreContext);
   if (!context) {
