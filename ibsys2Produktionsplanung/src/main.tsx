@@ -7,11 +7,13 @@ import { Startseite } from './pages/Startseite';
 import { Produktionsplanung } from './pages/Produktionsplanung';
 import { Minutenplanung } from './pages/MinutenPlanung';
 import { GeneralStoreProvider } from './helper/GeneralStoreContext'; // Import the provider
+import Navbar from './components/navbar';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
 	<React.StrictMode>
     <GeneralStoreProvider>
     <Router>
+      <Navbar></Navbar>
       <Routes>
         <Route path="/" element={<Startseite />}></Route>
         <Route path="/Produktionsplanung" element={<Produktionsplanung />}></Route>

@@ -2,7 +2,6 @@ import { Button } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import { useGeneralStore } from '../helper/GeneralStoreContext';
 
-
 export function Minutenplanung() {
     const context = useGeneralStore()
     console.log(context);
