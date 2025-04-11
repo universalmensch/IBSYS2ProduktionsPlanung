@@ -1,10 +1,13 @@
 import { Button } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
+import FileInput from '../components/fileintput';
 
 export function Startseite() {
     return(
         <div>
+
             <h1>Startseite</h1>
+            <FileInput></FileInput>
             <LinkContainer to="/Produktionsplanung">
                 <Button className="Button">
                     Produktionsplanung

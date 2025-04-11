@@ -4,7 +4,7 @@ import { LinkContainer } from 'react-router-bootstrap';
 export function Produktionsplanung() {
     return(
         <div>
-            <h1>Produktionsplanung</h1>
+              <h1>Produktionsplanung</h1>
             <LinkContainer to="/">
                 <Button className="Button">
                     Startseite
