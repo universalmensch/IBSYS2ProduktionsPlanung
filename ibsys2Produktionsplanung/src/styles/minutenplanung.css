@@ -1,0 +1,15 @@
+.small-cell {
+    min-width: 25px;
+    padding: 4px;
+    border: 1px solid #0d0e0d;
+  }
+  
+  .border-end {
+    border-right: 2px solid #141414;
+  }
+
+  .label-fett {
+    font-weight: bold;
+  }
+  
+  
