@@ -6,8 +6,9 @@ export default function Navbar() {
       <a className="navbar-brand mx-3" href="/">SupplyChainManagement</a>
 
       <div className="d-flex">
-        <a className="navbar-item text-decoration-none text-dark px-1" href="/Minutenplanung">Minutenplanung</a>
         <a className="navbar-item text-decoration-none text-dark px-1" href="/Produktionsplanung">Produktionsplanung</a>
+        <a className="navbar-item text-decoration-none text-dark px-1" href="/Minutenplanung">Minutenplanung</a>
+        <a className="navbar-item text-decoration-none text-dark px-1" href="/KaufteilDisposition">KaufteilDisposition</a>
       </div>
     </nav>
   );
