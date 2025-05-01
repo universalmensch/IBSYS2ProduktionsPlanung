@@ -1,149 +1,143 @@
+export class ProduktionsPlanDTO {
+    private readonly _p1Restbestand: number;
+    private readonly _p2Restbestand: number;
+    private readonly _p3Restbestand: number;
 
-export class ProduktionsPlanDTO{
-    p1Restbestand: number;
-    p2Restbestand: number;
-    p3Restbestand: number;
-
-    p1ProduktionWoche0?: number;
-    p2ProduktionWoche0?: number;
-    p3ProduktionWoche0?: number;
-
-    p1ProduktionWoche1?: number;
-    p2ProduktionWoche1?: number;
-    p3ProduktionWoche1?: number;
-
-    p1ProduktionWoche2?: number;
-    p2ProduktionWoche2?: number;
-    p3ProduktionWoche2?: number;
-
-    p1ProduktionWoche3?: number;
-    p2ProduktionWoche3?: number;
-    p3ProduktionWoche3?: number;
-
-    constructor(p1Restbestand: number, p2Restbestand: number, p3Restbestand: number){
-        this.p1Restbestand = p1Restbestand;
-        this.p2Restbestand = p2Restbestand;
-        this.p3Restbestand = p3Restbestand;
+    constructor(p1Restbestand: number, p2Restbestand: number, p3Restbestand: number) {
+        this._p1Restbestand = p1Restbestand;
+        this._p2Restbestand = p2Restbestand;
+        this._p3Restbestand = p3Restbestand;
     }
 
-  get P1Restbestand(): number {
-    return p1Restbestand;
-  }
+    get p1Restbestand(): number {
+        return this._p1Restbestand;
+    }
 
-  set P1Restbestand(value: number) {
-    p1Restbestand = value;
-  }
+    get p2Restbestand(): number {
+        return this._p2Restbestand;
+    }
 
+    get p3Restbestand(): number {
+        return this._p3Restbestand;
+    }
 
-  get P2Restbestand(): number {
-    return p2Restbestand;
-  }
+    private _p2ProduktionWoche0?: number;
 
-  set P2Restbestand(value: number) {
-    p2Restbestand = value;
-  }
+    get p2ProduktionWoche0(): number {
+        return this._p2ProduktionWoche0 != undefined ? this._p2ProduktionWoche0 : 0;
+    }
 
-  get P3Restbestand(): number {
-    return p3Restbestand;
-  }
+    set p2ProduktionWoche0(value: number) {
+        this._p2ProduktionWoche0 = value;
+    }
 
-  set P3Restbestand(value: number) {
-    p3Restbestand = value;
-  }
+    private _p3ProduktionWoche0?: number;
 
-  get P1ProduktionWoche0(): number | undefined {
-    return p1ProduktionWoche0;
-  }
+    get p3ProduktionWoche0(): number {
+        return this._p3ProduktionWoche0 != undefined ? this._p3ProduktionWoche0 : 0;
+    }
 
-  set P1ProduktionWoche0(value: number | undefined) {
-    p1ProduktionWoche0 = value;
-  }
+    set p3ProduktionWoche0(value: number) {
+        this._p3ProduktionWoche0 = value;
+    }
 
-  get P2ProduktionWoche0(): number | undefined {
-    return p2ProduktionWoche0;
-  }
+    private _p1ProduktionWoche1?: number;
 
-  set P2ProduktionWoche0(value: number | undefined) {
-    p2ProduktionWoche0 = value;
-  }
+    get p1ProduktionWoche1(): number {
+        return this._p1ProduktionWoche1 != undefined ? this._p1ProduktionWoche1 : 0;
+    }
 
-  get P3ProduktionWoche0(): number | undefined {
-    return p3ProduktionWoche0;
-  }
+    set p1ProduktionWoche1(value: number) {
+        this._p1ProduktionWoche1 = value;
+    }
 
-  set P3ProduktionWoche0(value: number | undefined) {
-    p3ProduktionWoche0 = value;
-  }
+    private _p2ProduktionWoche1?: number;
 
-  get P1ProduktionWoche1(): number | undefined {
-    return p1ProduktionWoche0;
-  }
+    get p2ProduktionWoche1(): number {
+        return this._p2ProduktionWoche1 != undefined ? this._p2ProduktionWoche1 : 0;
+    }
 
-  set P1ProduktionWoche1(value: number | undefined) {
-    p1ProduktionWoche1 = value;
-  }
+    set p2ProduktionWoche1(value: number) {
+        this._p2ProduktionWoche1 = value;
+    }
 
-  get P2ProduktionWoche1(): number | undefined {
-    return p2ProduktionWoche1;
-  }
+    private _p3ProduktionWoche1?: number;
 
-  set P2ProduktionWoche1(value: number | undefined) {
-    p2ProduktionWoche1 = value;
-  }
+    get p3ProduktionWoche1(): number {
+        return this._p3ProduktionWoche1 != undefined ? this._p3ProduktionWoche1 : 0;
+    }
 
-  get P3ProduktionWoche1(): number | undefined {
-    return p3ProduktionWoche1;
-  }
+    set p3ProduktionWoche1(value: number) {
+        this._p3ProduktionWoche1 = value;
+    }
 
-  set P3ProduktionWoche1(value: number | undefined) {
-    p3ProduktionWoche1 = value;
-  }
+    private _p1ProduktionWoche2?: number;
 
-  get P1ProduktionWoche2(): number | undefined {
-    return p1ProduktionWoche2;
-  }
+    get p1ProduktionWoche2(): number {
+        return this._p1ProduktionWoche2 != undefined ? this._p1ProduktionWoche2 : 0;
+    }
 
-  set P1ProduktionWoche2(value: number | undefined) {
-    p1ProduktionWoche2 = value;
-  }
+    set p1ProduktionWoche2(value: number) {
+        this._p1ProduktionWoche2 = value;
+    }
 
-  get P2ProduktionWoche2(): number | undefined {
-    return p2ProduktionWoche2;
-  }
+    private _p2ProduktionWoche2?: number;
 
-  set P2ProduktionWoche2(value: number | undefined) {
-    p2ProduktionWoche2 = value;
-  }
+    get p2ProduktionWoche2(): number {
+        return this._p2ProduktionWoche2 != undefined ? this._p2ProduktionWoche2 : 0;
+    }
 
-  get P3ProduktionWoche2(): number | undefined {
-    return p3ProduktionWoche2;
-  }
+    set p2ProduktionWoche2(value: number) {
+        this._p2ProduktionWoche2 = value;
+    }
 
-  set P3ProduktionWoche2(value: number | undefined) {
-    p3ProduktionWoche2 = value;
-  }
+    private _p3ProduktionWoche2?: number;
 
-  get P1ProduktionWoche3(): number | undefined {
-    return p1ProduktionWoche3;
-  }
+    get p3ProduktionWoche2(): number {
+        return this._p3ProduktionWoche2 != undefined ? this._p3ProduktionWoche2 : 0;
+    }
 
-  set P1ProduktionWoche3(value: number | undefined) {
-    p1ProduktionWoche3 = value;
-  }
+    set p3ProduktionWoche2(value: number) {
+        this._p3ProduktionWoche2 = value;
+    }
 
-  get P2ProduktionWoche3(): number | undefined {
-    return p2ProduktionWoche3;
-  }
+    private _p1ProduktionWoche3?: number;
 
-  set P2ProduktionWoche3(value: number | undefined) {
-    p2ProduktionWoche3 = value;
-  }
+    get p1ProduktionWoche3(): number {
+        return this._p1ProduktionWoche3 != undefined ? this._p1ProduktionWoche3 : 0;
+    }
 
-  get P3ProduktionWoche3(): number | undefined {
-    return p3ProduktionWoche3;
-  }
+    set p1ProduktionWoche3(value: number) {
+        this._p1ProduktionWoche3 = value;
+    }
 
-  set P3ProduktionWoche3(value: number | undefined) {
-    p3ProduktionWoche3 = value;
-  }
+    private _p2ProduktionWoche3?: number;
+
+    get p2ProduktionWoche3(): number {
+        return this._p2ProduktionWoche3 != undefined ? this._p2ProduktionWoche3 : 0;
+    }
+
+    set p2ProduktionWoche3(value: number) {
+        this._p2ProduktionWoche3 = value;
+    }
+
+    private _p3ProduktionWoche3?: number;
+
+    get p3ProduktionWoche3(): number {
+        return this._p3ProduktionWoche3 != undefined ? this._p3ProduktionWoche3 : 0;
+    }
+
+    set p3ProduktionWoche3(value: number) {
+        this._p3ProduktionWoche3 = value;
+    }
+
+    private _p1ProduktionWoche0?: number;
+
+    get p1ProduktionWoche0(): number {
+        return this._p1ProduktionWoche0 != undefined ? this._p1ProduktionWoche0 : 0;
+    }
+
+    set p1ProduktionWoche0(value: number) {
+        this._p1ProduktionWoche0 = value;
+    }
 }
