@@ -34,7 +34,7 @@ const FileInput: React.FC = () => {
       const parser = new XMLParser({ignoreAttributes : false});
       const json = parser.parse(xmlData);
 
-      setGeneralStoreData(json)
+      setGeneralStoreData({input: json})
     };
   };
 
