@@ -12,6 +12,7 @@ export class BestellungDTO {
 }
 
 export enum BestellTyp {
-    NORMAL,
-    EIL
+    NORMAL = "NORMAL",
+    EIL= "EIL",
+    KEINE = "KEINE"
 }

@@ -2,9 +2,9 @@ import {Button, Dropdown, DropdownButton, Table} from 'react-bootstrap';
 import {LinkContainer} from 'react-router-bootstrap';
 import {useGeneralStore} from '../helper/GeneralStoreContext';
 import {ProduktionsPlanDTO} from "../dtos/ProduktionsPlanDTO.tsx";
-import {Kaufteil, KaufteileDTO} from './../dtos/KaufteileDTO';
-import {BestellArt} from "../dtos/BestellArt.tsx";
+import {Kaufteil, Kaufteile} from '../dtos/Kaufteile.tsx';
 import {useState} from "react";
+import {BestellTyp, BestellungDTO} from "../dtos/BestellungDTO.tsx";
 
 export function Kaufteildisposition() {
     const context = useGeneralStore()
@@ -12,16 +12,7 @@ export function Kaufteildisposition() {
 
     const produktionsPlan = new ProduktionsPlanDTO(100, 100, 100);
 
-    const [kaufteile, setKaufteile] = useState<Record<string, Kaufteil>>(KaufteileDTO);
-
-    //TODO the new values needs to be saved properly, it doesn't work that way
-    const handleBestellArtChange = (id: string, neueBestellung: BestellArt) => {
-        setKaufteile(() => {
-            const result: Record<string, Kaufteil> = kaufteile;
-            result[id].bestellung = neueBestellung;
-            return result;
-        });
-    };
+    const [bestellungen, setBestellungen] = useState<BestellungDTO[]>(initializeBestellungen());
 
     produktionsPlan.p1ProduktionWoche0 = 100;
     produktionsPlan.p2ProduktionWoche0 = 200;
@@ -38,6 +29,26 @@ export function Kaufteildisposition() {
     produktionsPlan.p1ProduktionWoche3 = 103;
     produktionsPlan.p2ProduktionWoche3 = 203;
     produktionsPlan.p3ProduktionWoche3 = 303;
+
+    function initializeBestellungen(){
+        const result: BestellungDTO[] = [];
+        Kaufteile.forEach(kaufteil => {
+            result[kaufteil.id]= new BestellungDTO(kaufteil.id, BestellTyp.KEINE, 0);
+        })
+        return result;
+    }
+
+    function setBestellung(kaufteilNummer: number, typ: BestellTyp, menge: number){
+        setBestellungen(prevState => prevState.map((bestellung) => {
+            if(bestellung.kaufteilID === kaufteilNummer){
+                bestellung.typ = typ;
+                bestellung.menge = menge;
+                return bestellung;
+            } else {
+                return bestellung;
+            }
+        } ))
+    }
 
     function getBedarf(kaufteil: Kaufteil, p1: number, p2: number, p3: number) {
         return kaufteil.verwendungP1 * p1 + kaufteil.verwendungP2 * p2 + kaufteil.verwendungP3 * p3;
@@ -125,25 +136,25 @@ export function Kaufteildisposition() {
                 </thead>
                 <tbody>
                 { // for each bought item, the row of the table gets filled
-                    Object.entries(KaufteileDTO).map(([key, value]) => {
-                        return <tr>
-                            <td>{value.id}</td>
-                            <td>{value.verwendungP1} / {value.verwendungP2} / {value.verwendungP3}</td>
-                            <td>{value.restbestandVorperiode}</td>
-                            <td>{getGesamtBedarf(value)}</td>
-                            <td>{getWochenBedarf(0, value)}</td>
-                            <td>{getWochenBedarf(1, value)}</td>
-                            <td>{getWochenBedarf(2, value)}</td>
-                            <td>{getWochenBedarf(3, value)}</td>
-                            <td>{value.diskontmenge}</td>
-                            <td>{getOptimaleBestellmenge(value)}</td>
-                            <td><DropdownButton
+                    Kaufteile.map(kaufteil => {
+                        return <tr key={kaufteil.id}>
+                            <td key={kaufteil.id}>{kaufteil.id}</td>
+                            <td key={kaufteil.id}>{kaufteil.verwendungP1} / {kaufteil.verwendungP2} / {kaufteil.verwendungP3}</td>
+                            <td key={kaufteil.id}>{kaufteil.restbestandVorperiode}</td>
+                            <td key={kaufteil.id}>{getGesamtBedarf(kaufteil)}</td>
+                            <td key={kaufteil.id}>{getWochenBedarf(0, kaufteil)}</td>
+                            <td key={kaufteil.id}>{getWochenBedarf(1, kaufteil)}</td>
+                            <td key={kaufteil.id}>{getWochenBedarf(2, kaufteil)}</td>
+                            <td key={kaufteil.id}>{getWochenBedarf(3, kaufteil)}</td>
+                            <td key={kaufteil.id}>{kaufteil.diskontmenge}</td>
+                            <td key={kaufteil.id}>{getOptimaleBestellmenge(kaufteil)}</td>
+                            <td key={kaufteil.id}><DropdownButton
                                 id="dropdown-basic-button"
-                                title={kaufteile[key].bestellung}
+                                title={bestellungen[kaufteil.id].typ}
                                 size="sm"
                             >
-                                {Object.values(BestellArt).map((art) => (
-                                    <Dropdown.Item key={art} onClick={() => handleBestellArtChange(key, art)}>
+                                {Object.values(BestellTyp).map((art) => (
+                                    <Dropdown.Item key={art} onClick={() => setBestellung(kaufteil.id, art, bestellungen[kaufteil.id].menge)}>
                                         {art}
                                     </Dropdown.Item>
                                 ))}
