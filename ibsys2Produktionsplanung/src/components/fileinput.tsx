@@ -7,7 +7,7 @@ import { XMLParser } from 'fast-xml-parser';
 
 const FileInput: React.FC = () => {
   const [fileName, setFileName] = useState<string>('No file selected');
-  const { setGeneralStoreData } = useGeneralStore(); 
+  const { generalStore, setGeneralStoreData } = useGeneralStore(); 
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -30,11 +30,10 @@ const FileInput: React.FC = () => {
     reader.readAsText(file); // Read the file as text
     reader.onload = (e) => {
       const xmlData = e.target?.result as string;
-      console.log(xmlData)
-      const parser = new XMLParser({ignoreAttributes : false});
+      const parser = new XMLParser({ignoreAttributes : false,attributeNamePrefix: "",});
       const json = parser.parse(xmlData);
 
-      setGeneralStoreData({input: json})
+      setGeneralStoreData({...generalStore, input: json})
     };
   };
 

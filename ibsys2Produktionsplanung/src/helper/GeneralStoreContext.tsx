@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import GeneralStore from '../dtos/GeneralStoreDTO';
 interface GeneralStoreContextType {
   generalStore: GeneralStore | null;
@@ -9,6 +9,13 @@ const GeneralStoreContext = createContext<GeneralStoreContextType | null>(null);
 
 export const GeneralStoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [generalStore, setGeneralStore] = useState<GeneralStore | null>(null);
+
+  useEffect(() => {
+    const storedData = localStorage.getItem('generalStore');
+    if (storedData) {
+      setGeneralStore(JSON.parse(storedData));
+    }
+  }, []);
 
   const setGeneralStoreData = (newGeneralStoreData: GeneralStore) => {
     setGeneralStore(newGeneralStoreData);
