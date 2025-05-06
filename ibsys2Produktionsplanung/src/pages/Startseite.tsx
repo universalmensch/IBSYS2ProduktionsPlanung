@@ -1,6 +1,6 @@
 import { Button } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
-import FileInput from '../components/fileintput';
+import FileInput from '../components/fileinput';
 
 export function Startseite() {
     return(

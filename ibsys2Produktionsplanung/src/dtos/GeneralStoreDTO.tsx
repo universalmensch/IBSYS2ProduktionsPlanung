@@ -1,6 +1,9 @@
+import { XMLInput } from './XMLInput';
+import { XMLOutput } from './XMLOutput';
+
 class GeneralStore {
-   input?: any
-   output?: any
+   input?: XMLInput
+   output?: XMLOutput
   }
 
 export default GeneralStore;
