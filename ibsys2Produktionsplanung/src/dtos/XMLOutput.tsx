@@ -1,56 +1,57 @@
 export type XMLOutput = {
-  input?: {
-    qualitycontrol?: QualityControl;
-    sellwish?: SellWish;
-    selldirect?: SellDirect;
-    orderlist?: OrderList;
-    productionlist?: {production: Production[]};
-    workingtimelist?:{workingtime: WorkingTime[]};
-  }
-  };
-  
-  type QualityControl = {
+    input?: {
+        qualitycontrol?: QualityControl;
+        sellwish?: SellWish;
+        selldirect?: SellDirect;
+        orderlist?: OrderList;
+        productionlist?: { production: Production[] };
+        workingtimelist?: { workingtime: WorkingTime[] };
+    }
+};
+
+type QualityControl = {
     type: string;
     losequantity: number;
     delay: number;
-  };
-  
-  type SellWish = {
+};
+
+type SellWish = {
     item: SellWishItem[];
-  };
-  
-  type SellWishItem = {
+};
+
+type SellWishItem = {
     article: number;
     quantity: number;
-  };
-  
-  type SellDirect = {
+};
+
+type SellDirect = {
     item: SellDirectItem[];
-  };
-  
-  type SellDirectItem = {
+};
+
+type SellDirectItem = {
     article: number;
     quantity: number;
     price: number;
     penalty: number;
-  };
-  type OrderList = {
+};
+
+type OrderList = {
     order: Order[]
-  }
-  type Order = {
+}
+
+export type Order = {
     article: number;
     quantity: number;
     modus: number;
-    
-  };
-  
-  type Production = {
+};
+
+type Production = {
     article: number;
     quantity: number;
-  };
-  
-  type WorkingTime = {
+};
+
+type WorkingTime = {
     station: number;
     shift: number;
     overtime: number;
-  };
+};

@@ -5,12 +5,15 @@ import {ProduktionsPlanDTO} from "../dtos/ProduktionsPlanDTO.tsx";
 import {Kaufteil, Kaufteile} from '../dtos/Kaufteile.tsx';
 import {useState} from "react";
 import {BestellTyp, BestellungDTO} from "../dtos/BestellungDTO.tsx";
+import {Order} from "../dtos/XMLOutput.tsx";
 
 export function Kaufteildisposition() {
     const context = useGeneralStore()
-    console.log(context);
-
-    const produktionsPlan = new ProduktionsPlanDTO(100, 100, 100);
+    const input = context.generalStore?.input?.results
+    const output = context.generalStore?.output?.input
+    const periode = input ? input.period : 0
+    const orders = input?.futureinwardstockmovement.order
+    const produktionsPlan = context.generalStore?.produktionsPlan ?? new ProduktionsPlanDTO(0, 0, 0);
 
     const [bestellungen, setBestellungen] = useState<BestellungDTO[]>(initializeBestellungen());
 
@@ -30,24 +33,62 @@ export function Kaufteildisposition() {
     produktionsPlan.p2ProduktionWoche3 = 203;
     produktionsPlan.p3ProduktionWoche3 = 303;
 
-    function initializeBestellungen(){
+    function initializeBestellungen() {
+        //initialize all orders
         const result: BestellungDTO[] = [];
         Kaufteile.forEach(kaufteil => {
-            result[kaufteil.id]= new BestellungDTO(kaufteil.id, BestellTyp.KEINE, 0);
+            result[kaufteil.id] = new BestellungDTO(kaufteil.id, BestellTyp.KEINE, 0, false, periode);
         })
+
+        //set already existing orders
+        if (orders !== undefined) {
+            orders.forEach(order => {
+                result[order.article] = new BestellungDTO(order.article, getBestellTyp(order.mode), order.amount, order.orderperiod !== periode, order.orderperiod)
+            })
+        }
         return result;
     }
 
-    function setBestellung(kaufteilNummer: number, typ: BestellTyp, menge: number){
+    /**
+     * function to convert scs modus into {@link BestellTyp}
+     * @param mode of the order
+     */
+    function getBestellTyp(mode: number) {
+        if (mode === 5) {
+            return BestellTyp.NORMAL;
+        } else if (mode === 4) {
+            return BestellTyp.EIL;
+        } else {
+            return BestellTyp.KEINE;
+        }
+    }
+
+    /**
+     * function to convert {@link BestellTyp} into the modus of scs tool
+     * @param typ of the order
+     */
+    function getModus(typ: BestellTyp) {
+        if (typ === BestellTyp.NORMAL) {
+            return 5;
+        }
+        return 4;
+    }
+
+    function setBestellung(kaufteilNummer: number, typ: BestellTyp, menge: number) {
         setBestellungen(prevState => prevState.map((bestellung) => {
-            if(bestellung.kaufteilID === kaufteilNummer){
-                bestellung.typ = typ;
-                bestellung.menge = menge;
+            if (bestellung.kaufteilID === kaufteilNummer) {
+                if (typ === BestellTyp.KEINE && menge !== 0) {
+                    bestellung.typ = BestellTyp.NORMAL;
+                    bestellung.menge = Math.ceil(menge);
+                } else {
+                    bestellung.typ = typ;
+                    bestellung.menge = Math.ceil(menge);
+                }
                 return bestellung;
             } else {
                 return bestellung;
             }
-        } ))
+        }))
     }
 
     function getBedarf(kaufteil: Kaufteil, p1: number, p2: number, p3: number) {
@@ -59,22 +100,36 @@ export function Kaufteildisposition() {
     }
 
     function getGesamtBedarf(kaufteil: Kaufteil) {
-        return getWochenBedarf(0, kaufteil) + getWochenBedarf(1, kaufteil) + getWochenBedarf(2, kaufteil) + getWochenBedarf(3, kaufteil);
+        return getWochenBedarf(periode, kaufteil) + getWochenBedarf(periode + 1, kaufteil) + getWochenBedarf(periode + 2, kaufteil) + getWochenBedarf(periode + 3, kaufteil);
     }
 
     function getWochenBedarf(woche: number, kaufteil: Kaufteil) {
         switch (woche) {
-            case 0 :
+            case periode :
                 return getBedarf(kaufteil, produktionsPlan.p1ProduktionWoche0, produktionsPlan.p2ProduktionWoche0, produktionsPlan.p3ProduktionWoche0)
-            case 1 :
+            case periode + 1 :
                 return getBedarf(kaufteil, produktionsPlan.p1ProduktionWoche1, produktionsPlan.p2ProduktionWoche1, produktionsPlan.p3ProduktionWoche1)
-            case 2 :
+            case periode + 2 :
                 return getBedarf(kaufteil, produktionsPlan.p1ProduktionWoche2, produktionsPlan.p2ProduktionWoche2, produktionsPlan.p3ProduktionWoche2)
-            case 3 :
+            case periode + 3 :
                 return getBedarf(kaufteil, produktionsPlan.p1ProduktionWoche3, produktionsPlan.p2ProduktionWoche3, produktionsPlan.p3ProduktionWoche3)
             default :
                 return -1;
         }
+    }
+
+    //TODO funktioniert noch nicht so ganz
+    function save() {
+        bestellungen.forEach(bestellung => {
+            if (bestellung.menge > 0) {
+                const result: Order = {
+                    article: bestellung.kaufteilID,
+                    quantity: bestellung.menge,
+                    modus: getModus(bestellung.typ)
+                };
+                output?.orderlist?.order.push(result)
+            }
+        })
     }
 
     return (
@@ -87,10 +142,10 @@ export function Kaufteildisposition() {
                 </tr>
                 <tr>
                     <th>Fahrrad</th>
-                    <th>Woche 0</th>
-                    <th>Woche 1</th>
-                    <th>Woche 2</th>
-                    <th>Woche 3</th>
+                    <th>Periode {periode}</th>
+                    <th>Periode {periode + 1}</th>
+                    <th>Periode {periode + 2}</th>
+                    <th>Periode {periode + 3}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -118,6 +173,8 @@ export function Kaufteildisposition() {
                 </tbody>
             </Table>
 
+            <br/>
+
             <Table>
                 <thead>
                 <tr>
@@ -125,46 +182,64 @@ export function Kaufteildisposition() {
                     <th>Verwendung</th>
                     <th>Restbestand</th>
                     <th>Gesamt Bedarf</th>
-                    <th>Bedarf W0</th>
-                    <th>Bedarf W1</th>
-                    <th>Bedarf W2</th>
-                    <th>Bedarf W3</th>
+                    <th>Bedarf Periode {periode} / {periode + 1} / {periode + 2} / {periode + 3}</th>
                     <th>Diskontmenge</th>
                     <th>Optimale Bestellmenge</th>
                     <th>Bestellung</th>
+                    <th>Menge</th>
+                    <th>Bestell Periode</th>
                 </tr>
                 </thead>
                 <tbody>
                 { // for each bought item, the row of the table gets filled
                     Kaufteile.map(kaufteil => {
-                        return <tr key={kaufteil.id}>
-                            <td key={kaufteil.id}>{kaufteil.id}</td>
-                            <td key={kaufteil.id}>{kaufteil.verwendungP1} / {kaufteil.verwendungP2} / {kaufteil.verwendungP3}</td>
-                            <td key={kaufteil.id}>{kaufteil.restbestandVorperiode}</td>
-                            <td key={kaufteil.id}>{getGesamtBedarf(kaufteil)}</td>
-                            <td key={kaufteil.id}>{getWochenBedarf(0, kaufteil)}</td>
-                            <td key={kaufteil.id}>{getWochenBedarf(1, kaufteil)}</td>
-                            <td key={kaufteil.id}>{getWochenBedarf(2, kaufteil)}</td>
-                            <td key={kaufteil.id}>{getWochenBedarf(3, kaufteil)}</td>
-                            <td key={kaufteil.id}>{kaufteil.diskontmenge}</td>
-                            <td key={kaufteil.id}>{getOptimaleBestellmenge(kaufteil)}</td>
-                            <td key={kaufteil.id}><DropdownButton
-                                id="dropdown-basic-button"
-                                title={bestellungen[kaufteil.id].typ}
+                        const id = kaufteil.id;
+                        return <tr key={id}>
+                            <td key={id}>{id}</td>
+                            <td key={id}>{kaufteil.verwendungP1} / {kaufteil.verwendungP2} / {kaufteil.verwendungP3}</td>
+                            <td key={id}>{kaufteil.restbestandVorperiode}</td>
+                            <td key={id}>{getGesamtBedarf(kaufteil)}</td>
+                            <td key={id}>{getWochenBedarf(periode, kaufteil)} / {getWochenBedarf(periode + 1, kaufteil)} / {getWochenBedarf(periode + 2, kaufteil)} / {getWochenBedarf(periode + 3, kaufteil)}</td>
+                            <td key={id}>{kaufteil.diskontmenge}</td>
+                            <td key={id}>{getOptimaleBestellmenge(kaufteil)}</td>
+                            <td key={id}><DropdownButton
+                                title={bestellungen[id].typ}
                                 size="sm"
+                                disabled={bestellungen[id].bereitsBestellt}
                             >
                                 {Object.values(BestellTyp).map((art) => (
-                                    <Dropdown.Item key={art} onClick={() => setBestellung(kaufteil.id, art, bestellungen[kaufteil.id].menge)}>
+                                    <Dropdown.Item key={art}
+                                                   onClick={() => setBestellung(id, art, bestellungen[id].menge)}>
                                         {art}
                                     </Dropdown.Item>
                                 ))}
                             </DropdownButton></td>
+                            <td key={id}>
+                                <input
+                                    min={0}
+                                    type="number"
+                                    value={bestellungen[id].menge}
+                                    disabled={bestellungen[id].bereitsBestellt}
+                                    onChange={(e) => setBestellung(id, bestellungen[id].typ, Number(e.target.value))}
+                                />
+                            </td>
+                            <td key={id}>{bestellungen[id].bestellPeriode}</td>
                         </tr>;
                     })
                 }
                 </tbody>
             </Table>
 
+            <br/>
+
+            <Button className="Button"
+                    onClick={() => save()}
+            >
+                Bestellungen Speichern
+            </Button>
+
+            <br/>
+            <br/>
 
             <LinkContainer to="/Minutenplanung">
                 <Button className="Button">
