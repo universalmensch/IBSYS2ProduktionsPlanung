@@ -21,6 +21,16 @@ export class ProduktionsPlanDTO {
         return this._p3Restbestand;
     }
 
+    private _p1ProduktionWoche0?: number;
+
+    get p1ProduktionWoche0(): number {
+        return this._p1ProduktionWoche0 ?? 0;
+    }
+
+    set p1ProduktionWoche0(value: number) {
+        this._p1ProduktionWoche0 = value;
+    }
+
     private _p2ProduktionWoche0?: number;
 
     get p2ProduktionWoche0(): number {
@@ -129,15 +139,5 @@ export class ProduktionsPlanDTO {
 
     set p3ProduktionWoche3(value: number) {
         this._p3ProduktionWoche3 = value;
-    }
-
-    private _p1ProduktionWoche0?: number;
-
-    get p1ProduktionWoche0(): number {
-        return this._p1ProduktionWoche0 ?? 0;
-    }
-
-    set p1ProduktionWoche0(value: number) {
-        this._p1ProduktionWoche0 = value;
     }
 }
