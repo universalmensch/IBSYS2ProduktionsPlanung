@@ -8,12 +8,14 @@ import {BestellTyp, BestellungDTO} from "../dtos/BestellungDTO.tsx";
 import {Order} from "../dtos/XMLOutput.tsx";
 
 export function Kaufteildisposition() {
-    const context = useGeneralStore()
-    const input = context.generalStore?.input?.results
-    const output = context.generalStore?.output?.input
+    const {generalStore, setGeneralStoreData} = useGeneralStore()
+
+    console.log(generalStore)
+    const input = generalStore?.input?.results
+    const output = generalStore?.output?.input
     const periode = input ? input.period : 0
     const orders = input?.futureinwardstockmovement.order
-    const produktionsPlan = context.generalStore?.produktionsPlan ?? new ProduktionsPlanDTO(0, 0, 0);
+    const produktionsPlan = generalStore?.produktionsPlan ?? new ProduktionsPlanDTO(0, 0, 0);
 
     const [bestellungen, setBestellungen] = useState<BestellungDTO[]>(initializeBestellungen());
 
@@ -118,19 +120,38 @@ export function Kaufteildisposition() {
         }
     }
 
-    //TODO funktioniert noch nicht so ganz
+    //TODO testen
     function save() {
-        bestellungen.forEach(bestellung => {
-            if (bestellung.menge > 0) {
-                const result: Order = {
-                    article: bestellung.kaufteilID,
-                    quantity: bestellung.menge,
-                    modus: getModus(bestellung.typ)
-                };
-                output?.orderlist?.order.push(result)
+        const existingOrders = output?.orderlist?.order ?? [];
+    
+        const newOrders = bestellungen
+            .filter(b => b.menge > 0)
+            .map(b => ({
+                article: b.kaufteilID,
+                quantity: b.menge,
+                modus: getModus(b.typ)
+            }))
+            .filter(newOrder => 
+                !existingOrders.some(existing => existing.article === newOrder.article)
+            );
+    
+        if (newOrders.length === 0) return;
+    
+        const updatedOutput = {
+            ...(output ?? {}),
+            orderlist: {
+                ...(output?.orderlist ?? {}),
+                order: [...existingOrders, ...newOrders]
             }
-        })
-    }
+        };
+    
+        setGeneralStoreData({
+            ...generalStore,
+            output: {
+                input: updatedOutput
+            }
+        });
+    }    
 
     return (
         <div>
@@ -195,14 +216,14 @@ export function Kaufteildisposition() {
                     Kaufteile.map(kaufteil => {
                         const id = kaufteil.id;
                         return <tr key={id}>
-                            <td key={id}>{id}</td>
-                            <td key={id}>{kaufteil.verwendungP1} / {kaufteil.verwendungP2} / {kaufteil.verwendungP3}</td>
-                            <td key={id}>{kaufteil.restbestandVorperiode}</td>
-                            <td key={id}>{getGesamtBedarf(kaufteil)}</td>
-                            <td key={id}>{getWochenBedarf(periode, kaufteil)} / {getWochenBedarf(periode + 1, kaufteil)} / {getWochenBedarf(periode + 2, kaufteil)} / {getWochenBedarf(periode + 3, kaufteil)}</td>
-                            <td key={id}>{kaufteil.diskontmenge}</td>
-                            <td key={id}>{getOptimaleBestellmenge(kaufteil)}</td>
-                            <td key={id}><DropdownButton
+                            <td>{id}</td>
+                            <td>{kaufteil.verwendungP1} / {kaufteil.verwendungP2} / {kaufteil.verwendungP3}</td>
+                            <td>{kaufteil.restbestandVorperiode}</td>
+                            <td>{getGesamtBedarf(kaufteil)}</td>
+                            <td>{getWochenBedarf(periode, kaufteil)} / {getWochenBedarf(periode + 1, kaufteil)} / {getWochenBedarf(periode + 2, kaufteil)} / {getWochenBedarf(periode + 3, kaufteil)}</td>
+                            <td>{kaufteil.diskontmenge}</td>
+                            <td>{getOptimaleBestellmenge(kaufteil)}</td>
+                            <td><DropdownButton
                                 title={bestellungen[id].typ}
                                 size="sm"
                                 disabled={bestellungen[id].bereitsBestellt}
@@ -214,7 +235,7 @@ export function Kaufteildisposition() {
                                     </Dropdown.Item>
                                 ))}
                             </DropdownButton></td>
-                            <td key={id}>
+                            <td>
                                 <input
                                     min={0}
                                     type="number"
@@ -223,7 +244,7 @@ export function Kaufteildisposition() {
                                     onChange={(e) => setBestellung(id, bestellungen[id].typ, Number(e.target.value))}
                                 />
                             </td>
-                            <td key={id}>{bestellungen[id].bestellPeriode}</td>
+                            <td>{bestellungen[id].bestellPeriode}</td>
                         </tr>;
                     })
                 }
@@ -233,7 +254,7 @@ export function Kaufteildisposition() {
             <br/>
 
             <Button className="Button"
-                    onClick={() => save()}
+                    onClick={save}
             >
                 Bestellungen Speichern
             </Button>
