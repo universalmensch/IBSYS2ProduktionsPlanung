@@ -2,5 +2,11 @@
     "Startseite": "Startseite",
     "Sprache ändern": "Sprache ändern",
     "Ausgewählte Datei": "Ausgewählte Datei",
-    "Laden sie eine XML hoch": "Laden sie eine XML hoch"
+    "Laden sie eine XML hoch": "Laden sie eine XML hoch",
+    "navbar": {
+        "title": "Lieferkettenmanagement",
+        "Produktionsplanung": "Produktionsplanung",
+        "Minutenplanung": "Minutenplanung",
+        "KaufteilDisposition": "Kaufteil-Disposition"
+    }    
 }
