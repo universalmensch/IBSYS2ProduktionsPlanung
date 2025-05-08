@@ -120,10 +120,7 @@ export function Kaufteildisposition() {
         }
     }
 
-    //TODO testen
-    function save() {
-        const existingOrders = output?.orderlist?.order ?? [];
-    
+    function save() {    
         const newOrders = bestellungen
             .filter(b => b.menge > 0)
             .map(b => ({
@@ -131,17 +128,12 @@ export function Kaufteildisposition() {
                 quantity: b.menge,
                 modus: getModus(b.typ)
             }))
-            .filter(newOrder => 
-                !existingOrders.some(existing => existing.article === newOrder.article)
-            );
-    
-        if (newOrders.length === 0) return;
     
         const updatedOutput = {
             ...(output ?? {}),
             orderlist: {
                 ...(output?.orderlist ?? {}),
-                order: [...existingOrders, ...newOrders]
+                order: newOrders
             }
         };
     
