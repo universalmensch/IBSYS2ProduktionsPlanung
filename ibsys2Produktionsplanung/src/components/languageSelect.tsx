@@ -32,7 +32,7 @@ const LanguageSelect = () => {
         <ul className="lang-dropdown" style={{
           position: 'absolute',
           top: '100%',
-          left: 0,
+          right: 0,
           backgroundColor: 'white',
           border: '1px solid #ccc',
           borderRadius: '4px',
@@ -40,14 +40,21 @@ const LanguageSelect = () => {
           margin: '6px 0 0 0',
           listStyle: 'none',
           boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-          zIndex: 1000
+          zIndex: 1000,
+          textAlign: 'left',
         }}>
           {LANGUAGES.map(({ code, label, flag }) => (
             <li key={code}>
               <button
                 onClick={() => handleChange(code)}
                 className="dropdown-item btn btn-link"
-                style={{ textAlign: 'left', width: '100%' }}
+                style={{
+                    textAlign: 'left',
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '6px 12px'
+                  }}
               >
                 <img src={flag} alt={code} width="20" height="15" className="me-2" />
                 {label}
