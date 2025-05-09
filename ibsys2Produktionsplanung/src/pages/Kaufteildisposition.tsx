@@ -5,7 +5,6 @@ import {ProduktionsPlanDTO} from "../dtos/ProduktionsPlanDTO.tsx";
 import {Kaufteil, Kaufteile} from '../dtos/Kaufteile.tsx';
 import {useState} from "react";
 import {BestellTyp, BestellungDTO} from "../dtos/BestellungDTO.tsx";
-import {Order} from "../dtos/XMLOutput.tsx";
 
 export function Kaufteildisposition() {
     const {generalStore, setGeneralStoreData} = useGeneralStore()

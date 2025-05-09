@@ -9,6 +9,8 @@ import { Minutenplanung } from './pages/MinutenPlanung';
 import { Kaufteildisposition } from './pages/Kaufteildisposition';
 import { GeneralStoreProvider } from './helper/GeneralStoreContext'; // Import the provider
 import Navbar from './components/navbar';
+import './i18n.tsx';
+
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
 	<React.StrictMode>

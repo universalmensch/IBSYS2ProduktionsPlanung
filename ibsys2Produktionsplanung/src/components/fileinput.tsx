@@ -3,11 +3,13 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import {useGeneralStore} from '../helper/GeneralStoreContext';
 
 import {XMLParser} from 'fast-xml-parser';
+import { useTranslation } from 'react-i18next';
 
 
 const FileInput: React.FC = () => {
     const [fileName, setFileName] = useState<string>('No file selected');
     const {generalStore, setGeneralStoreData} = useGeneralStore();
+    const {t} = useTranslation()
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -40,7 +42,7 @@ const FileInput: React.FC = () => {
     return (
         <>
             <label htmlFor="fileInput" className="btn btn-primary btn-lg">
-                Choose a File
+                {t("Laden sie eine XML hoch")}
                 <input
                     type="file"
                     id="fileInput"
@@ -49,7 +51,7 @@ const FileInput: React.FC = () => {
                     onChange={handleFileChange}
                 />
             </label>
-            <p className="mt-3 text-muted">{`Selected file: ${fileName}`}</p>
+            <p className="mt-3 text-muted">{`${t('Ausgewählte Datei')}: ${fileName}`}</p>
         </>
     );
 };
