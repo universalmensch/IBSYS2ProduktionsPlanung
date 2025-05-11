@@ -34,7 +34,8 @@ export function TeileProduktion() {
             }
 
             //set Warteschlange
-            const warteschlange: { item: number; amount: number }[] = [];
+            produktionsteil.warteschlange
+            const warteschlange: { item: number; amount: number; order: number }[] = [];
 
             for (const station of waitingWorkplace) {
                 const waitingList = station.waitinglist;
@@ -44,11 +45,22 @@ export function TeileProduktion() {
                 listArray.forEach(waiting => {
                     warteschlange.push({
                         item: waiting.item,
-                        amount: waiting.amount
+                        amount: waiting.amount,
+                        order: waiting.order
                     });
                 });
             }
 
+            if(warteschlange !== undefined) {
+                const uniquewarteschlange = warteschlange.filter((item, index, self) =>
+                    index === self.findIndex(b => b.item === item.item && b.order === item.order)
+                );
+                uniquewarteschlange.forEach(w =>{
+                    if(w.item == produktionsteil.id) {
+                        produktionsteil.warteschlange += Number(w.amount);
+                    }
+                });
+            }
             //set In Bearbeitung
              if (inBearbeitung !== undefined) {
                 console.log(inBearbeitung)
@@ -61,7 +73,6 @@ export function TeileProduktion() {
                     if(b.item == produktionsteil.id )
                     produktionsteil.bearbeitung += Number(b.amount);
                 })
-                // produktionsteil.bearbeitung = inBearbeitung.filter(r => r.item == produktionsteil.id)[0]?.amount ?? 0
             }
         })
 
