@@ -1,211 +1,136 @@
-import {Button, Table} from 'react-bootstrap';
-import {useGeneralStore} from '../helper/GeneralStoreContext';
-import {ProduktionsPlanDTO} from "../dtos/ProduktionsPlanDTO.tsx";
-import {useState} from "react";
-import {AnzeigeReihenfolge, Produktionsteil, Produktionsteile, SpaceAfterRow} from "../dtos/Produktionsteile.tsx";
-import {ProduktionsAuftragDTO} from "../dtos/ProduktionsAuftragDTO.tsx";
+import { useState } from 'react';
+import { Button, Container, Table, Row, Col, Form } from 'react-bootstrap';
+import { LinkContainer } from 'react-router-bootstrap';
+import { ProduktionsPlanDTO } from '../dtos/ProduktionsPlanDTO';
+import { useGeneralStore } from '../helper/GeneralStoreContext';
 
 export function Produktionsplanung() {
-    const {generalStore, setGeneralStoreData} = useGeneralStore()
+    const { generalStore, setGeneralStoreData } = useGeneralStore();
+    const input = generalStore?.input;
 
-    const input = generalStore?.input?.results
-
-    const restBestand = input?.warehousestock?.article
-    const waitingWorkplace = input?.waitinglistworkstations.workplace || []
-    const inBearbeitung = input?.ordersineork?.workplace
-
-    const output = generalStore?.output?.input
-
-    const produktionsPlan = generalStore?.produktionsPlan ?? new ProduktionsPlanDTO(0, 0, 0);
-
-    produktionsPlan.p1ProduktionWoche0 = 100;
-    produktionsPlan.p2ProduktionWoche0 = 200;
-    produktionsPlan.p3ProduktionWoche0 = 300;
-
-    const [produktionsteile] = useState<Produktionsteil[]>(initializeProduktionsteile());
-    const [produktionsAuftraege, setProduktionsAuftraege] = useState<ProduktionsAuftragDTO[]>(initializeAuftraege());
-
-    function initializeProduktionsteile() {
-        const result = Produktionsteile.map(teil => new Produktionsteil(teil.id, teil.menge));
-        result.forEach((produktionsteil: Produktionsteil) => {
-            //set Restbestand
-            if (restBestand !== undefined) {
-                restBestand.forEach(article => {
-                    if (article.id === produktionsteil.id) {
-                        produktionsteil.bearbeitung = article.amount;
-                    }
-                })
-            }
-
-            //set Warteschlange
-            const warteschlange: { item: number; amount: number }[] = [];
-
-            for (const station of waitingWorkplace) {
-                const waitingList = station.waitinglist;
-                if (!waitingList) continue;
-                const listArray = Array.isArray(waitingList) ? waitingList : [waitingList];
-
-                listArray.forEach(waiting => {
-                    warteschlange.push({
-                        item: waiting.item,
-                        amount: waiting.amount
-                    });
-                });
-            }
-
-            //set In Bearbeitung
-            if (inBearbeitung !== undefined) {
-                inBearbeitung.forEach(order => {
-                    if (order.id === produktionsteil.id) {
-                        produktionsteil.bearbeitung = order.amount;
-                    }
-                })
-            }
-        })
-
-        //set Aufträge TODO ????
-        const teil1 = result.find(teil => teil.id === 1) ?? new Produktionsteil(1, 0);
-        teil1.auftraege = produktionsPlan.p1ProduktionWoche0
-        //set aus Warteschlange
-        return result;
+    if (!input) {
+        return <p className="text-center mt-5">Keine XML-Daten verfügbar.</p>;
     }
 
-    function initializeAuftraege() {
-        //initialize all orders
-        const result: ProduktionsAuftragDTO[] = [];
-        Produktionsteile.forEach(produktionsteil => {
-            result[produktionsteil.id] = new ProduktionsAuftragDTO(produktionsteil.id, produktionsteil.menge, produktionsteil.planRestbestand);
-        })
-        return result;
-    }
+    const forecast = input.results.forecast;
 
-    function getProduktionsTeil(id: number) {
-        return produktionsteile.find(produktionsteil => produktionsteil.id === id)
-    }
+    const getRestbestand = (articleId: number): number => {
+        const artikel = input.results.warehousestock.article.find(a => Number(a.id) === articleId);
+        return Number(artikel?.amount) ?? 0;
+    };
 
-    // TODO rechnung zwischen restbestand und menge fehlt noch
-    function setAuftrag(kaufteilNummer: number, planRestbestand: number, menge: number) {
-        setProduktionsAuftraege(prevState => prevState.map((produktionsAuftrag) => {
-            if (produktionsAuftrag.kaufteilID === kaufteilNummer) {
-                // 16, 17 and 26 are used in all bikes
-                if (produktionsAuftrag.kaufteilID === 16 || produktionsAuftrag.kaufteilID === 17 || produktionsAuftrag.kaufteilID === 26) {
-                    planRestbestand !== -1 ? produktionsAuftrag.planRestBestand = Math.ceil(planRestbestand) * 3 : produktionsAuftrag;
-                    menge !== -1 ? produktionsAuftrag.menge = Math.ceil(menge) * 3 : produktionsAuftrag;
-                } else {
-                    planRestbestand !== -1 ? produktionsAuftrag.planRestBestand = Math.ceil(planRestbestand) : produktionsAuftrag;
-                    menge !== -1 ? produktionsAuftrag.menge = Math.ceil(menge) : produktionsAuftrag;
-                }
-            }
-            return produktionsAuftrag;
-        }))
-    }
+    const [vertriebswunsch, setVertriebswunsch] = useState({ p1: 0, p2: 0, p3: 0 });
 
-    function save() {
-        const production = produktionsAuftraege
-            .filter(auftrag => auftrag.menge > 0)
-            .map(auftrag => ({
-                article: auftrag.kaufteilID,
-                quantity: auftrag.menge
-            }))
+    const handlePlanErstellen = () => {
+        const plan = new ProduktionsPlanDTO(
+            getRestbestand(1),
+            getRestbestand(2),
+            getRestbestand(3)
+        );
+        plan.p1ProduktionWoche0 = vertriebswunsch.p1;
+        plan.p2ProduktionWoche0 = vertriebswunsch.p2;
+        plan.p3ProduktionWoche0 = vertriebswunsch.p3;
 
-        const updatedOutput = {
-            ...(output ?? {}),
-            production: {
-                ...(output?.productionlist ?? {}),
-                production: production
-            }
-        };
+        setGeneralStoreData({ ...generalStore, produktionsPlan: plan });
+        console.log("ProduktionsPlan gespeichert:", plan);
+    };
 
-        setGeneralStoreData({
-            ...generalStore,
-            output: {
-                input: updatedOutput
-            }
-        });
-    }
-
-    function getPlanRestBestand(id: number) {
-        if (id === 26 || id === 16 || id === 17) {
-            return produktionsAuftraege[id].planRestBestand / 3;
-        }
-        return produktionsAuftraege[id].planRestBestand;
-    }
-
-    function getMenge(id: number) {
-        if (id === 26 || id === 16 || id === 17) {
-            return produktionsAuftraege[id].menge / 3;
-        }
-        return produktionsAuftraege[id].menge;
-    }
+    const berechneRestbestand = (produkt: 'p1' | 'p2' | 'p3') => {
+        const anfang = getRestbestand(parseInt(produkt[1]));
+        const prognose = forecast[produkt];
+        const wunsch = vertriebswunsch[produkt];
+        return anfang + wunsch - prognose;
+    };
 
     return (
-        <div>
-            <h1>Produktionsplanung</h1>
-            <Table>
-                <thead>
-                <tr>
-                    <th>Produktionsteil</th>
-                    <th>Aufträge</th>
-                    <th>Aus Warteschlangen</th>
-                    <th>Plan Restbestand</th>
-                    <th>Restbestand</th>
-                    <th>Warteschlange</th>
-                    <th>In Bearbeitung</th>
-                    <th>Menge</th>
-                </tr>
-                </thead>
-                <tbody>
-                {
-                    AnzeigeReihenfolge.map(
-                        id => {
-                            return <>
-                                <tr key={Math.random()}>{
-                                    //extra space between the different bikes
-                                    (id === 2 || id === 3) && <></>
+        <Container className="my-5">
+            <h1 className="text-center mb-4">Produktionsplanung</h1>
 
-                                }</tr>
-                                <tr key={Math.random()}>
-                                    <td>{getProduktionsTeil(id)?.id}</td>
-                                    <td>{getProduktionsTeil(id)?.auftraege}</td>
-                                    <td>{getProduktionsTeil(id)?.fuerWarteschlangen}</td>
-                                    <td>
-                                        <input
-                                            min={0}
-                                            type="number"
-                                            value={getPlanRestBestand(id)}
-                                            onChange={(e) => setAuftrag(id, Number(e.target.value), -1)}
-                                        />
-                                    </td>
-                                    <td>{getProduktionsTeil(id)?.restBestand}</td>
-                                    <td>{getProduktionsTeil(id)?.warteschlange}</td>
-                                    <td>{getProduktionsTeil(id)?.bearbeitung}</td>
-                                    <td>
-                                        <input
-                                            min={0}
-                                            type="number"
-                                            value={getMenge(id)}
-                                            onChange={(e) => setAuftrag(id, -1, Number(e.target.value))}
-                                        />
-                                    </td>
-                                </tr>
-                                <tr key={Math.random()}>{
-                                    //extra spaces for the structure of the table
-                                    (SpaceAfterRow.includes(id)) && <></>
+            <section className="mb-5">
+                <h4>Prognose – Periode {input.results.period}</h4>
+                <Table bordered hover responsive className="mt-3">
+                    <thead>
+                        <tr><th>Produkt</th><th>Prognose</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Produkt 1</td><td>{forecast.p1}</td></tr>
+                        <tr><td>Produkt 2</td><td>{forecast.p2}</td></tr>
+                        <tr><td>Produkt 3</td><td>{forecast.p3}</td></tr>
+                    </tbody>
+                </Table>
+            </section>
 
-                                }</tr>
-                            </>;
-                        })
-                }
-                </tbody>
-            </Table>
+            <section className="mb-5">
+                <h4>Aktueller Restbestand</h4>
+                <Table bordered hover responsive className="mt-3" style={{ backgroundColor: '#ffffcc' }}>
+                    <thead>
+                        <tr><th>Produkt</th><th>Restbestand</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>P1</td><td>{getRestbestand(1)}</td></tr>
+                        <tr><td>P2</td><td>{getRestbestand(2)}</td></tr>
+                        <tr><td>P3</td><td>{getRestbestand(3)}</td></tr>
+                    </tbody>
+                </Table>
+            </section>
 
-            <br/>
+            <section className="mb-5 text-center">
+                <h4>Vertriebswunsch eingeben</h4>
+                <Form className="mt-4">
+                    {(['p1', 'p2', 'p3'] as const).map((key, i) => {
+                        const restwert = berechneRestbestand(key);
+                        return (
+                            <Row className="justify-content-center align-items-center mb-3" key={key}>
+                                <Col xs="auto">
+                                    <Form.Label className="mt-2">Produkt {i + 1}</Form.Label>
+                                </Col>
+                                <Col xs="auto">
+                                    <Form.Control
+                                        type="number"
+                                        min={0}
+                                        value={vertriebswunsch[key]}
+                                        onChange={e =>
+                                            setVertriebswunsch({
+                                                ...vertriebswunsch,
+                                                [key]: Math.max(0, Math.floor(Number(e.target.value) || 0))
+                                            })
+                                        }
+                                        style={{ width: '100px' }}
+                                    />
+                                </Col>
+                                <Col xs="auto">
+                                    <Form.Control
+                                        value={restwert}
+                                        readOnly
+                                        disabled
+                                        style={{
+                                            width: '100px',
+                                            backgroundColor: restwert < 0 ? '#f8d7da' : '#eee',
+                                            color: restwert < 0 ? '#842029' : 'inherit',
+                                            fontWeight: 'bold'
+                                        }}
+                                    />
+                                </Col>
+                                <Col xs="auto">
+                                    <span className="text-muted">← berechneter Restbestand</span>
+                                </Col>
+                            </Row>
+                        );
+                    })}
+                </Form>
+                <Button variant="primary" onClick={handlePlanErstellen}>
+                    Speichern
+                </Button>
+            </section>
 
-            <Button className="Button"
-                    onClick={save}
-            >
-                Produktionsplan Speichern
-            </Button>
-        </div>
+            <section className="d-flex justify-content-center gap-3 mt-4">
+                <LinkContainer to="/">
+                    <Button variant="outline-secondary">Startseite</Button>
+                </LinkContainer>
+                <LinkContainer to="/Minutenplanung">
+                    <Button variant="outline-secondary">Minutenplanung</Button>
+                </LinkContainer>
+            </section>
+        </Container>
     );
 }
