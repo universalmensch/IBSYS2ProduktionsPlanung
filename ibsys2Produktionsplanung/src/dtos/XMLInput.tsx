@@ -8,7 +8,7 @@ export type XMLInput = {
         idletimecosts: IdleTimeCosts;
         waitinglistworkstations: WaitingListWorkstations;
         waitinglistdtock: WaitingListStock;
-        ordersineork: OrdersInWork;
+        ordersinwork: OrdersInWork;
         completedorders: CompletedOrders;
         cycletimes: CycleTimes;
     }

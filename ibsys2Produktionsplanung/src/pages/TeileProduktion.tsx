@@ -12,7 +12,7 @@ export function TeileProduktion() {
 
     const restBestand = input?.warehousestock?.article
     const waitingWorkplace = input?.waitinglistworkstations.workplace || []
-    const inBearbeitung = input?.ordersineork?.workplace
+    const inBearbeitung = input?.ordersinwork?.workplace
 
     const output = generalStore?.output?.input
 
@@ -30,11 +30,7 @@ export function TeileProduktion() {
         result.forEach((produktionsteil: Produktionsteil) => {
             //set Restbestand
             if (restBestand !== undefined) {
-                restBestand.forEach(article => {
-                    if (article.id === produktionsteil.id) {
-                        produktionsteil.bearbeitung = article.amount;
-                    }
-                })
+                produktionsteil.restBestand = restBestand.filter(r => r.id == produktionsteil.id)[0].amount
             }
 
             //set Warteschlange
@@ -54,12 +50,18 @@ export function TeileProduktion() {
             }
 
             //set In Bearbeitung
-            if (inBearbeitung !== undefined) {
-                inBearbeitung.forEach(order => {
-                    if (order.id === produktionsteil.id) {
-                        produktionsteil.bearbeitung = order.amount;
-                    }
+             if (inBearbeitung !== undefined) {
+                console.log(inBearbeitung)
+                //filter out duplikates in same order
+                const uniqueBearbeitung = inBearbeitung.filter((item, index, self) =>
+                    index === self.findIndex(b => b.item === item.item && b.order === item.order)
+                );
+
+                uniqueBearbeitung.forEach( b => {
+                    if(b.item == produktionsteil.id )
+                    produktionsteil.bearbeitung += Number(b.amount);
                 })
+                // produktionsteil.bearbeitung = inBearbeitung.filter(r => r.item == produktionsteil.id)[0]?.amount ?? 0
             }
         })
 
