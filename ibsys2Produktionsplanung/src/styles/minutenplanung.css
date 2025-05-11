@@ -1,4 +1,4 @@
-/* .small-cell {
+.small-cell {
     min-width: 25px;
     padding: 4px;
     border: 1px solid #0d0e0d;
@@ -12,24 +12,23 @@
     font-weight: bold;
   } */
   
-/*   .minuten-tabelle {
+  .minuten-tabelle {
   width: 100%;
   font-size: 0.75rem; /* kleinerer Text */
-  /* table-layout: fixed;
-} */
+  table-layout: fixed;
+} 
 
-/* .minuten-tabelle th,
+.minuten-tabelle th,
 .minuten-tabelle td {
   padding: 0.3rem; /* weniger Padding */
-  /* text-align: center;
+   text-align: center;
   vertical-align: middle;
   white-space: nowrap;
-} */ */
+} 
 
-/* .container {
+.container {
   margin-left: 0;
   margin-right: 0;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
-}
- */ */
+} 

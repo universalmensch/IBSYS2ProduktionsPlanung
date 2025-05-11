@@ -4,6 +4,7 @@ import { LinkContainer } from 'react-router-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/minutenplanung.css'
 import { useGeneralStore } from '../helper/GeneralStoreContext';
+import { WorkingTime} from '../dtos/XMLOutput';
 
 type Zeile = {
   id: string;
@@ -16,26 +17,14 @@ type Zeile = {
 
 export const MinutenPlanung = () => {
 
-  //XML-Importdaten
-type Arbeitsplatz = {
- id: number;
- rueckstandzeit: number;
-}; 
-//XML-Export-Daten
-type Mehrzeit = {
-  station: number;
-  shift: number;
-  overtime: number;
-}; 
-
 const {generalStore, setGeneralStoreData} = useGeneralStore();
 
 console.log(generalStore)
 const input = generalStore?.input?.results;
 const output = generalStore?.output?.input;
-const periode = input ? input.period : 0;
 const wartelistenArbeitsplatz = input?.waitinglistworkstations.workplace;
 
+//Funktion für den Import der XML-Daten
 useEffect(() => {
   if (!wartelistenArbeitsplatz) return;
 
@@ -44,16 +33,48 @@ useEffect(() => {
   wartelistenArbeitsplatz.forEach((workplace) => {
     const { id, timeneed } = workplace;
 
-    // Die Arbeitsplatz-ID beginnt bei 1, die Array-Indexierung bei 0
     const arrayIndex = id - 1;
 
     if (arrayIndex >= 0 && arrayIndex < 15) {
-      rueckstandArray[arrayIndex] = timeneed;
+      rueckstandArray[arrayIndex] = Number(timeneed) || 0;  // ← Fix hier
     }
   });
 
   setRueckstandKapa(rueckstandArray);
 }, [wartelistenArbeitsplatz]);
+
+//Funktion für den Export der XML-Daten:
+function save() {
+  const workingTimes: WorkingTime[] = benoetigteZusatzschichten.map((shift, index) => {
+    const overtime = benoetigteUeberstunden[index] === '' ? 0 : Number(benoetigteUeberstunden[index]);
+    const shiftVal = shift === '' ? 0 : Number(shift);
+
+    return {
+      station: index + 1,
+      shift: shiftVal,
+      overtime: overtime
+    };
+  });
+
+  const updatedOutput = {
+    ...(output ?? {}),
+    workingtimelist: {
+      workingtime: workingTimes
+    }
+  };
+
+  setGeneralStoreData({
+    ...generalStore,
+    output: {
+      ...(generalStore.output ?? {}),
+      input: updatedOutput
+    }
+  });
+
+  console.log("Gespeicherte Arbeitszeiten für XML:", workingTimes);
+}
+
+
 
 
   const [zeilen] = useState<Zeile[]>([
@@ -152,7 +173,7 @@ useEffect(() => {
       
   {
     id: 'schutzblech_v_d',
-    bezeichnung: 'Schutzblech',
+    bezeichnung: '',
     typ: 'D',
     sachNr: 'E14',
     auftragsmenge: 100,
@@ -331,35 +352,50 @@ useEffect(() => {
     minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 3 ? 7 : '')),
   },
   ]);
-
-  const kapaBedarf: (number | '')[] = Array.from({ length: 15 }, (_, i) => {
-    const sum = zeilen.reduce((acc, zeile) => {
-      const min = zeile.minutenLinks[i];
-      return acc + (typeof min === 'number' ? min * zeile.auftragsmenge : 0);
-    }, 0);
-    return sum > 0 ? sum : '';
-  });
-  
-
-  const initialArray = Array(15).fill('');
   
   const [ruestzeitGesamt, setRuestzeitGesamt] = useState(Array(15).fill(0));
-  const [rueckstandKapa, setRueckstandKapa] = useState<number[]>(initialArray);
-  const [rueckstandRuestzeit, setRueckstandRuestzeit] = useState<number[]>(initialArray);
-  const [gesamtKapaBedarf, setGesamtKapaBedarf] = useState<number[]>(initialArray);
+  const [rueckstandKapa, setRueckstandKapa] = useState<number[]>(Array(15).fill(0));
+  const [rueckstandRuestzeit, setRueckstandRuestzeit] = useState<number[]>(Array(15).fill(0));
+  const [gesamtKapaBedarf, setGesamtKapaBedarf] = useState<number[]>(Array(15).fill(0));
   
-  
-  // Summenberechnung mit useEffect
-  useEffect(() => {
-  const neueSumme = Array.from({ length: 15 }, (_, i) => {
-    const kapa = typeof kapaBedarf[i] === 'number' ? kapaBedarf[i] : 0;
-    const rueckKapa = typeof rueckstandKapa[i] === 'number' ? rueckstandKapa[i] : 0;
-    const ruest = typeof ruestzeitGesamt[i] === 'number' ? ruestzeitGesamt[i] : 0;
-    const rueckRuest = typeof rueckstandRuestzeit[i] === 'number' ? rueckstandRuestzeit[i] : 0;
+  console.log('Rückstandkapa: ' + rueckstandKapa);
+  console.log('Rückstandkapa (number[]):', rueckstandKapa);
 
-    return kapa + rueckKapa + ruest + rueckRuest;
+const [kapaBedarf, setKapaBedarf] = useState<number[]>(Array(15).fill(0));
+
+useEffect(() => {
+  const neueKapaBedarf = Array.from({ length: 15 }, (_, i) => {
+  const sum = zeilen.reduce((acc, zeile) => {
+    const min = zeile.minutenLinks[i];
+    return acc + (typeof min === 'number' ? min * zeile.auftragsmenge : 0);
+  }, 0);
+  return sum; // immer eine Zahl (auch wenn 0)
+});
+
+  setKapaBedarf(neueKapaBedarf);
+}, [zeilen]);
+
+
+  useEffect(() => {
+
+  console.log('Berechne gesamtKapaBedarf mit:');
+  console.log('kapaBedarf', kapaBedarf);
+  console.log('ruestzeitGesamt', ruestzeitGesamt);
+  console.log('rueckstandKapa', rueckstandKapa);
+  console.log('rueckstandRuestzeit', rueckstandRuestzeit);
+
+  const gesamt = Array.from({ length: 15 }, (_, i) => {
+    const kapa = typeof kapaBedarf[i] === 'number' ? kapaBedarf[i] as number : 0;
+    const ruest = typeof ruestzeitGesamt[i] === 'number' ? ruestzeitGesamt[i] : 0;
+    const ruecksKapa = typeof rueckstandKapa[i] === 'number' ? rueckstandKapa[i] : 0;
+    const ruecksRuest = typeof rueckstandRuestzeit[i] === 'number' ? rueckstandRuestzeit[i] : 0;
+
+    console.log('Rückstandkapa: ' + rueckstandKapa);
+    console.log('Rückkapa: ' + ruecksKapa);
+    return kapa + ruest + ruecksKapa + ruecksRuest;
   });
-  setGesamtKapaBedarf(neueSumme);
+
+  setGesamtKapaBedarf(gesamt);
 }, [kapaBedarf, ruestzeitGesamt, rueckstandKapa, rueckstandRuestzeit]);
 
 const ruestzeitEinfach = [
@@ -426,8 +462,8 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
   // const [ruestzeitGesamt, setRuestzeitGesamt] = useState(Array(15).fill(0));
 
   return (
-    <div className="container mt-4">
-      {/* <div className="container-fluid mt-4"> */}
+    // <div className="container mt-4">
+      <div className="container-fluid mt-4">
       <h1>Minutenplanung</h1>
       <div className="mb-3">
         <LinkContainer to="/">
@@ -479,7 +515,9 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
   ))}
 </tr>
 
-<tr id="rüstzeit_neu" className="label-fett">
+<tr id="rüstzeit_neu" 
+// className="label-fett"
+>
   <td colSpan={4}>Einfache Rüstzeit / Rüstzeit gesamt (neu)</td>
   
         {ruestzeitEinfach.map((einfach, i) => (
@@ -507,14 +545,18 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
 
 
 
-<tr id="rücks_kapaBedarf_neu" className="label-fett">
+<tr id="rückstandKapaBedarf_neu" 
+// className="label-fett"
+>
   <td colSpan={4} className="align-middle text-center">Kap.bed. (Rückstand Vorperiode)</td>
   {rueckstandKapa.map((value, i) => (
         <td colSpan={2} key={i}>{value}</td>
       ))}
 </tr>
 
-<tr id="rücks_rüstzeit" className="label-fett">
+<tr id="rücks_rüstzeit" 
+// className="label-fett"
+>
   <td colSpan={4} className="align-middle text-center">Rüstzeit (Rückstand Vorperiode)</td>
   {rueckstandRuestzeit.map((wert, i) => (
     <td colSpan={2} key={i} className="text-center">
@@ -523,12 +565,21 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
   ))}
 </tr>
 
-<tr id="gesamt_kapabedarf" style={{ fontWeight: 'bold', backgroundColor: '#f0f0f0' }} className="label-fett">
+{/* <tr id="gesamt_kapabedarf" style={{ fontWeight: 'bold', backgroundColor: '#f0f0f0' }} className="label-fett">
   <td colSpan={4} className="align-middle text-center">Gesamt-Kapazitätsbedarf</td>
   {gesamtKapaBedarf.map((wert, i) => (
     <td colSpan={2} key={i} style={{ textAlign: 'center' }} className="text-center">
       {wert}
     </td>
+  ))}
+</tr> */}
+
+<tr className="fw-bold bg-light">
+  <td colSpan={4}>Gesamt Kapazitätsbedarf</td>
+  {gesamtKapaBedarf.map((val, i) => (
+    <React.Fragment key={i}>
+            <td colSpan={2} className="text-center">{val}</td>
+    </React.Fragment>
   ))}
 </tr>
 
@@ -634,7 +685,15 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
 
       </tbody>
     </Table>
-        </div>
+<div>
 
+</div>
+
+    <Button className="Button"
+                    onClick={save}
+            >
+                Arbeitszeitplan speichern
+            </Button>
+        </div>
   );
 };
