@@ -39,7 +39,7 @@ type OrderList = {
     order: Order[]
 }
 
-export type Order = {
+type Order = {
     article: number;
     quantity: number;
     modus: number;

@@ -11,9 +11,12 @@ export function Kaufteildisposition() {
 
     console.log(generalStore)
     const input = generalStore?.input?.results
-    const output = generalStore?.output?.input
     const periode = input ? input.period : 0
     const orders = input?.futureinwardstockmovement.order
+
+    const output = generalStore?.output?.input
+    const newOrders = output?.orderlist
+
     const produktionsPlan = generalStore?.produktionsPlan ?? new ProduktionsPlanDTO(0, 0, 0);
 
     const [bestellungen, setBestellungen] = useState<BestellungDTO[]>(initializeBestellungen());
@@ -40,6 +43,13 @@ export function Kaufteildisposition() {
         Kaufteile.forEach(kaufteil => {
             result[kaufteil.id] = new BestellungDTO(kaufteil.id, BestellTyp.KEINE, 0, false, periode);
         })
+
+        //set newly set orders
+        if (newOrders !== undefined) {
+            newOrders.order.forEach(order => {
+                result[order.article] = new BestellungDTO(order.article, getBestellTyp(order.modus), order.quantity, false, periode)
+            })
+        }
 
         //set already existing orders
         if (orders !== undefined) {
@@ -119,7 +129,7 @@ export function Kaufteildisposition() {
         }
     }
 
-    function save() {    
+    function save() {
         const newOrders = bestellungen
             .filter(b => b.menge > 0)
             .map(b => ({
@@ -127,7 +137,7 @@ export function Kaufteildisposition() {
                 quantity: b.menge,
                 modus: getModus(b.typ)
             }))
-    
+
         const updatedOutput = {
             ...(output ?? {}),
             orderlist: {
@@ -135,14 +145,14 @@ export function Kaufteildisposition() {
                 order: newOrders
             }
         };
-    
+
         setGeneralStoreData({
             ...generalStore,
             output: {
                 input: updatedOutput
             }
         });
-    }    
+    }
 
     return (
         <div>

@@ -1,12 +1,13 @@
 {
-    "Startseite": "Welcome Page",
-    "Sprache ändern": "Change Language",
-    "Ausgewählte Datei": "Selected file",
-    "Laden sie eine XML hoch": "Upload an XML",
-    "navbar": {
-        "title": "Supply Chain Management",
-        "Produktionsplanung": "Production Planning",
-        "Minutenplanung": "Minute Planning",
-        "KaufteilDisposition": "Purchased Parts Planning"
-      }
+  "Startseite": "Welcome Page",
+  "Sprache ändern": "Change Language",
+  "Ausgewählte Datei": "Selected file",
+  "Laden sie eine XML hoch": "Upload an XML",
+  "navbar": {
+    "title": "Supply Chain Management",
+    "Produktionsplanung": "Production Planning",
+    "Minutenplanung": "Minute Planning",
+    "KaufteilDisposition": "Purchased Parts Planning",
+    "TeileProduktion": "Parts production"
+  }
 }
