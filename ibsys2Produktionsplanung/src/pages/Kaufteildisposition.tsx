@@ -10,10 +10,10 @@ export function Kaufteildisposition() {
     const LAGER_KOSTEN_SATZ = 0.024;
     const {generalStore, setGeneralStoreData} = useGeneralStore()
 
-    console.log(generalStore)
     const input = generalStore?.input?.results
     const periode = input ? Number(input.period) + 1 : 0
     const orders = input?.futureinwardstockmovement.order
+    const restBestand = input?.warehousestock?.article
 
     const output = generalStore?.output?.input
     const newOrders = output?.orderlist
@@ -22,6 +22,7 @@ export function Kaufteildisposition() {
 
     const [bestellungen, setBestellungen] = useState<BestellungDTO[]>(initializeBestellungen());
     const [alteBestellungen] = useState<BestellungDTO[]>(initializeAlteBestellungen());
+    const [initialisierteKaufteile] = useState<Kaufteil[]>(initializeKaufteile());
 
     produktionsPlan.p1ProduktionWoche0 = 100;
     produktionsPlan.p2ProduktionWoche0 = 200;
@@ -48,6 +49,20 @@ export function Kaufteildisposition() {
                 result[order.article] = new BestellungDTO(order.article, getBestellTyp(Number(order.mode)), order.amount, order.orderperiod)
             })
         }
+        return result;
+    }
+
+    function initializeKaufteile() {
+        const result = Kaufteile.map(teil => new Kaufteil(teil.id, teil.lieferzeit, teil.lieferzeitAbweichung, teil.verwendungP1, teil.verwendungP2, teil.verwendungP3, teil.diskontmenge, teil.wert, teil.bestellKosten));
+        result.forEach((kaufteil: Kaufteil) => {
+            //set Restbestand
+            if (restBestand !== undefined) {
+                kaufteil.restbestandVorperiode = restBestand.filter(r => r.id == kaufteil.id)[0].amount
+            }
+        });
+
+        console.log(result)
+
         return result;
     }
 
@@ -224,8 +239,7 @@ export function Kaufteildisposition() {
                     </thead>
                     <tbody>
                     { // for each bought item, the row of the table gets filled
-                        //TODO Kaufteile Restbestand setzen
-                        Kaufteile.map(kaufteil => {
+                        initialisierteKaufteile.map(kaufteil => {
                             const id = kaufteil.id;
                             if (alteBestellungen[id] !== undefined) {
                                 return <tr key={id}>
@@ -270,7 +284,7 @@ export function Kaufteildisposition() {
                 </thead>
                 <tbody>
                 { // for each bought item, the row of the table gets filled
-                    Kaufteile.map(kaufteil => {
+                    initialisierteKaufteile.map(kaufteil => {
                         const id = kaufteil.id;
                         return <tr key={id}>
                             <td>{id}</td>
