@@ -12,7 +12,7 @@ export function Kaufteildisposition() {
 
     console.log(generalStore)
     const input = generalStore?.input?.results
-    const periode = input ? Number(input.period) : 0
+    const periode = input ? Number(input.period) + 1 : 0
     const orders = input?.futureinwardstockmovement.order
 
     const output = generalStore?.output?.input
@@ -21,6 +21,7 @@ export function Kaufteildisposition() {
     const produktionsPlan = generalStore?.produktionsPlan ?? new ProduktionsPlanDTO(0, 0, 0);
 
     const [bestellungen, setBestellungen] = useState<BestellungDTO[]>(initializeBestellungen());
+    const [alteBestellungen] = useState<BestellungDTO[]>(initializeAlteBestellungen());
 
     produktionsPlan.p1ProduktionWoche0 = 100;
     produktionsPlan.p2ProduktionWoche0 = 200;
@@ -38,24 +39,30 @@ export function Kaufteildisposition() {
     produktionsPlan.p2ProduktionWoche3 = 203;
     produktionsPlan.p3ProduktionWoche3 = 303;
 
-    function initializeBestellungen() {
-        //initialize all orders
+    function initializeAlteBestellungen() {
         const result: BestellungDTO[] = [];
+
+        //set already existing orders
+        if (orders !== undefined) {
+            orders.forEach(order => {
+                result[order.article] = new BestellungDTO(order.article, getBestellTyp(Number(order.mode)), order.amount, order.orderperiod)
+            })
+        }
+        return result;
+    }
+
+    function initializeBestellungen() {
+        const result: BestellungDTO[] = [];
+
+        //initialize all orders
         Kaufteile.forEach(kaufteil => {
-            result[kaufteil.id] = new BestellungDTO(kaufteil.id, BestellTyp.KEINE, 0, false, periode);
+            result[kaufteil.id] = new BestellungDTO(kaufteil.id, BestellTyp.KEINE, 0, periode);
         })
 
         //set newly set orders
         if (newOrders !== undefined) {
             newOrders.order.forEach(order => {
-                result[order.article] = new BestellungDTO(order.article, getBestellTyp(order.modus), order.quantity, false, periode)
-            })
-        }
-
-        //set already existing orders
-        if (orders !== undefined) {
-            orders.forEach(order => {
-                result[order.article] = new BestellungDTO(order.article, getBestellTyp(order.mode), order.amount, order.orderperiod !== periode, order.orderperiod)
+                result[order.article] = new BestellungDTO(order.article, getBestellTyp(Number(order.modus)), order.quantity, periode)
             })
         }
         return result;
@@ -198,8 +205,54 @@ export function Kaufteildisposition() {
 
             <br/>
 
+            {
+                (orders !== undefined) && <Table>
+                    <thead>
+                    <tr>
+                        <th>Ausgeführte Bestellungen</th>
+                    </tr>
+                    <tr>
+                        <th>Kaufteil</th>
+                        <th>Lieferzeit in Tagen</th>
+                        <th>Abweichung in Tagen</th>
+                        <th>Restbestand</th>
+                        <th>Gesamt Bedarf</th>
+                        <th>Bestellung</th>
+                        <th>Menge</th>
+                        <th>Bestell Periode</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    { // for each bought item, the row of the table gets filled
+                        //TODO Kaufteile Restbestand setzen
+                        Kaufteile.map(kaufteil => {
+                            const id = kaufteil.id;
+                            if (alteBestellungen[id] !== undefined) {
+                                return <tr key={id}>
+                                    <td>{id}</td>
+                                    <td>{kaufteil.lieferzeit}</td>
+                                    <td>{kaufteil.lieferzeitAbweichung}</td>
+                                    <td>{kaufteil.restbestandVorperiode}</td>
+                                    <td>{getGesamtBedarf(kaufteil)}</td>
+                                    <td><b>{alteBestellungen[id].typ}</b></td>
+                                    <td><b>{alteBestellungen[id].menge}</b></td>
+                                    <td>{alteBestellungen[id].bestellPeriode}</td>
+                                </tr>;
+                            }
+
+                        })
+                    }
+                    </tbody>
+                </Table>
+            }
+
+            <br/>
+
             <Table>
                 <thead>
+                <tr>
+                    <th>Neue Bestellungen</th>
+                </tr>
                 <tr>
                     <th>Kaufteil</th>
                     <th>Lieferzeit / Abweichung in Tagen</th>
@@ -227,12 +280,11 @@ export function Kaufteildisposition() {
                             <td>{getGesamtBedarf(kaufteil)}</td>
                             <td>{getWochenBedarf(periode, kaufteil)} / {getWochenBedarf(periode + 1, kaufteil)} / {getWochenBedarf(periode + 2, kaufteil)} / {getWochenBedarf(periode + 3, kaufteil)}</td>
                             <td>{kaufteil.diskontmenge}</td>
-                            <td>{kaufteil.bestellKosten}€ / {kaufteil.wert}€ / {LAGER_KOSTEN_SATZ}%</td>
+                            <td>{kaufteil.bestellKosten}€ / {kaufteil.wert}€ / {LAGER_KOSTEN_SATZ * 100}%</td>
                             <td>{getOptimaleBestellmenge(kaufteil)}</td>
                             <td><DropdownButton
                                 title={bestellungen[id].typ}
                                 size="sm"
-                                disabled={bestellungen[id].bereitsBestellt}
                             >
                                 {Object.values(BestellTyp).map((art) => (
                                     <Dropdown.Item key={art}
@@ -246,7 +298,6 @@ export function Kaufteildisposition() {
                                     min={0}
                                     type="number"
                                     value={bestellungen[id].menge}
-                                    disabled={bestellungen[id].bereitsBestellt}
                                     onChange={(e) => setBestellung(id, bestellungen[id].typ, Number(e.target.value))}
                                 />
                             </td>
