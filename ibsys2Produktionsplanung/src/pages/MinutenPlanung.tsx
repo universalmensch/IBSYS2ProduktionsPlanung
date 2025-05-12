@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Table, Button } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/minutenplanung.css'
 import { useGeneralStore } from '../helper/GeneralStoreContext';
 import { WorkingTime} from '../dtos/XMLOutput';
+import { Ruestzeiten } from '../dtos/Ruestzeiten';
 
 type Zeile = {
   id: string;
@@ -15,8 +16,13 @@ type Zeile = {
   minutenLinks: (number | '')[];
 };
 
-export const MinutenPlanung = () => {
+const ruestzeitMap = new Map();
+Ruestzeiten.forEach(({ teilnummer, arbeitsplatz, zeit }) => {
+  ruestzeitMap.set(`${arbeitsplatz}_${teilnummer}`, zeit);
+});
 
+export const MinutenPlanung = () => {
+//Allgemeines für den XML-Import und -Export
 const {generalStore, setGeneralStoreData} = useGeneralStore();
 
 console.log(generalStore)
@@ -24,6 +30,33 @@ const input = generalStore?.input?.results;
 const output = generalStore?.output?.input;
 const wartelistenArbeitsplatz = input?.waitinglistworkstations.workplace;
 
+const alleWaitingListEintraege = wartelistenArbeitsplatz?.flatMap(workplace => {
+  const waitingList = workplace.waitinglist;
+
+  const liste = Array.isArray(waitingList) ? waitingList : waitingList ? [waitingList] : [];
+
+  return liste.map(entry => ({
+    arbeitsplatzId: workplace.id,
+    period: entry.period,
+    order: entry.order,
+    item: entry.item,
+    timeNeed: entry.timeneed,
+    amount: entry.amount,
+    firstbatch: entry.firstbatch,
+    lastbatch: entry.lastbatch
+  }));
+});
+
+const alleWaitingListEintraegeMitRuestzeit = useMemo(() => {
+  return alleWaitingListEintraege?.map(entry => {
+    const key = `${entry.arbeitsplatzId}_${entry.item}`;
+    const zeit = ruestzeitMap.get(key) ?? 0;
+    return {
+      ...entry,
+      zeit
+    };
+  });
+}, [alleWaitingListEintraege]);
 //Funktion für den Import der XML-Daten
 useEffect(() => {
   if (!wartelistenArbeitsplatz) return;
@@ -42,6 +75,11 @@ useEffect(() => {
 
   setRueckstandKapa(rueckstandArray);
 }, [wartelistenArbeitsplatz]);
+
+
+//Import der Wartelisten mit den einzelnen wartenden Teilen, für die Rüstrückstandszeit
+
+
 
 //Funktion für den Export der XML-Daten:
 function save() {
@@ -357,6 +395,8 @@ function save() {
   const [rueckstandKapa, setRueckstandKapa] = useState<number[]>(Array(15).fill(0));
   const [rueckstandRuestzeit, setRueckstandRuestzeit] = useState<number[]>(Array(15).fill(0));
   const [gesamtKapaBedarf, setGesamtKapaBedarf] = useState<number[]>(Array(15).fill(0));
+  const [initialRuestzeitWurdeGesetzt, setInitialRuestzeitWurdeGesetzt] = useState(false);
+
   
   console.log('Rückstandkapa: ' + rueckstandKapa);
   console.log('Rückstandkapa (number[]):', rueckstandKapa);
@@ -374,6 +414,21 @@ useEffect(() => {
 
   setKapaBedarf(neueKapaBedarf);
 }, [zeilen]);
+
+useEffect(() => {
+  if (!initialRuestzeitWurdeGesetzt && alleWaitingListEintraegeMitRuestzeit) {
+    const arbeitsplatzRuestzeiten = Array(15).fill(0);
+    alleWaitingListEintraegeMitRuestzeit.forEach(entry => {
+      const arbeitsplatzIndex = entry.arbeitsplatzId - 1;
+      if (arbeitsplatzIndex >= 0 && arbeitsplatzIndex < 15) {
+        arbeitsplatzRuestzeiten[arbeitsplatzIndex] += entry.zeit;
+      }
+    });
+
+    setRueckstandRuestzeit(arbeitsplatzRuestzeiten);
+    setInitialRuestzeitWurdeGesetzt(true); 
+  }
+}, [alleWaitingListEintraegeMitRuestzeit, initialRuestzeitWurdeGesetzt]);
 
 
   useEffect(() => {
@@ -401,7 +456,6 @@ useEffect(() => {
 const ruestzeitEinfach = [
     60, 80, 60, 80, 0, 60, 210, 155, 140, 120, 80, 0, 0, 0, 30
   ];
-  // const [ruestzeitGesamt, setRuestzeitGesamt] = useState(Array(15).fill(0));
 
   const handleRuestzeitChange = (index: number, value: string) => {
     const neueWerte = [...ruestzeitGesamt];
@@ -457,9 +511,6 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
   updated[index] = isNaN(num) ? '' : num;
   setBenoetigteZusatzschichten(updated);
 };
-
-
-  // const [ruestzeitGesamt, setRuestzeitGesamt] = useState(Array(15).fill(0));
 
   return (
     // <div className="container mt-4">
@@ -554,13 +605,25 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
       ))}
 </tr>
 
-<tr id="rücks_rüstzeit" 
-// className="label-fett"
->
+<tr id="rückstand_rüstzeit">
   <td colSpan={4} className="align-middle text-center">Rüstzeit (Rückstand Vorperiode)</td>
   {rueckstandRuestzeit.map((wert, i) => (
     <td colSpan={2} key={i} className="text-center">
-      {wert}
+      <input
+        type="number"
+        value={wert}
+        onChange={(e) => {
+          const updatedRuestzeiten = [...rueckstandRuestzeit];
+          updatedRuestzeiten[i] = parseFloat(e.target.value) || 0;
+          setRueckstandRuestzeit(updatedRuestzeiten);
+        }}
+        style={{
+          width: '60px',
+          textAlign: 'center',
+          border: '1px solid #ccc',
+          backgroundColor: 'white',
+        }}
+      />
     </td>
   ))}
 </tr>
@@ -680,13 +743,50 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
   );
   })}
   </tr>
+  <tr>
+  <td colSpan={34} style={{ height: '1cm', background: 'transparent', border: 'none' }} />
+  </tr>
+  <tr>
+  <td colSpan={34}>
+    <h4 className="mt-4">Warteliste je Arbeitsplatz (timeNeed je Teil)</h4>
+    <Table 
+    // bordered size="sm" 
+    striped bordered hover className="table-waitinglist">
+      <thead>
+        <tr>
+          <th>Arbeitsplatz</th>
+          <th>Teil-Nr.</th>
+          <th>Periode</th>
+          <th>Auftrag</th>
+          <th>Batch (von - bis)</th>
+          <th>Menge</th>
+          <th>timeNeed</th>
+          <th>Rüstzeit</th>
+        </tr>
+      </thead>
+      <tbody>
+  {alleWaitingListEintraegeMitRuestzeit?.map((entry, index) => (
+    <tr key={index}>
+      <td className="text-center">{entry.arbeitsplatzId}</td>
+      <td className="text-center">{entry.item}</td>
+      <td className="text-center">{entry.period}</td>
+      <td className="text-center">{entry.order}</td>
+      <td className="text-center">
+        {entry.firstbatch} - {entry.lastbatch}
+      </td>
+      <td className="text-center">{entry.amount}</td>
+      <td className="text-center">{entry.timeNeed}</td>
+      <td className="text-center">{entry.zeit}</td>
+    </tr>
+  ))}
+</tbody>
+    </Table>
+  </td>
+</tr>
 
-
-
-      </tbody>
+  </tbody>
     </Table>
 <div>
-
 </div>
 
     <Button className="Button"
@@ -694,6 +794,10 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
             >
                 Arbeitszeitplan speichern
             </Button>
+
+            <tr>
+  <td colSpan={34} style={{ height: '1cm', background: 'transparent', border: 'none' }} />
+  </tr>
         </div>
   );
 };

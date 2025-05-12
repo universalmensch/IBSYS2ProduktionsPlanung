@@ -95,7 +95,7 @@ type WaitingList = {
     lastbatch: number;
     item: number;
     amount: number;
-    timeNeed: number;
+    timeneed: number;
 };
 
 type WaitingListStock = {
