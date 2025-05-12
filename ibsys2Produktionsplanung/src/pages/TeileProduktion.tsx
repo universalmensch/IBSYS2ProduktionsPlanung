@@ -12,7 +12,7 @@ export function TeileProduktion() {
 
     const restBestand = input?.warehousestock?.article
     const waitingWorkplace = input?.waitinglistworkstations.workplace || []
-    const inBearbeitung = input?.ordersineork?.workplace
+    const inBearbeitung = input?.ordersinwork?.workplace
 
     const output = generalStore?.output?.input
 
@@ -30,15 +30,11 @@ export function TeileProduktion() {
         result.forEach((produktionsteil: Produktionsteil) => {
             //set Restbestand
             if (restBestand !== undefined) {
-                restBestand.forEach(article => {
-                    if (article.id === produktionsteil.id) {
-                        produktionsteil.bearbeitung = article.amount;
-                    }
-                })
+                produktionsteil.restBestand = restBestand.filter(r => r.id == produktionsteil.id)[0].amount
             }
 
             //set Warteschlange
-            const warteschlange: { item: number; amount: number }[] = [];
+            const warteschlange: { item: number; amount: number; order: number }[] = [];
 
             for (const station of waitingWorkplace) {
                 const waitingList = station.waitinglist;
@@ -48,17 +44,33 @@ export function TeileProduktion() {
                 listArray.forEach(waiting => {
                     warteschlange.push({
                         item: waiting.item,
-                        amount: waiting.amount
+                        amount: waiting.amount,
+                        order: waiting.order
                     });
                 });
             }
 
-            //set In Bearbeitung
-            if (inBearbeitung !== undefined) {
-                inBearbeitung.forEach(order => {
-                    if (order.id === produktionsteil.id) {
-                        produktionsteil.bearbeitung = order.amount;
+            if(warteschlange !== undefined) {
+                const uniquewarteschlange = warteschlange.filter((item, index, self) =>
+                    index === self.findIndex(b => b.item === item.item && b.order === item.order)
+                );
+                uniquewarteschlange.forEach(w =>{
+                    if(w.item == produktionsteil.id) {
+                        produktionsteil.warteschlange += Number(w.amount);
                     }
+                });
+            }
+            //set In Bearbeitung
+             if (inBearbeitung !== undefined) {
+                console.log(inBearbeitung)
+                //filter out duplikates in same order
+                const uniqueBearbeitung = inBearbeitung.filter((item, index, self) =>
+                    index === self.findIndex(b => b.item === item.item && b.order === item.order)
+                );
+
+                uniqueBearbeitung.forEach( b => {
+                    if(b.item == produktionsteil.id )
+                    produktionsteil.bearbeitung += Number(b.amount);
                 })
             }
         })
