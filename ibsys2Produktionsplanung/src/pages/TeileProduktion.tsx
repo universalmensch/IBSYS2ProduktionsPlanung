@@ -34,7 +34,6 @@ export function TeileProduktion() {
             }
 
             //set Warteschlange
-            produktionsteil.warteschlange
             const warteschlange: { item: number; amount: number; order: number }[] = [];
 
             for (const station of waitingWorkplace) {
