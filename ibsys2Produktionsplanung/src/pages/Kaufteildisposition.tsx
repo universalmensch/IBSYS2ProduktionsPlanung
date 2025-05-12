@@ -7,11 +7,12 @@ import {useState} from "react";
 import {BestellTyp, BestellungDTO} from "../dtos/BestellungDTO.tsx";
 
 export function Kaufteildisposition() {
+    const LAGER_KOSTEN_SATZ = 0.024;
     const {generalStore, setGeneralStoreData} = useGeneralStore()
 
     console.log(generalStore)
     const input = generalStore?.input?.results
-    const periode = input ? input.period : 0
+    const periode = input ? Number(input.period) : 0
     const orders = input?.futureinwardstockmovement.order
 
     const output = generalStore?.output?.input
@@ -107,7 +108,7 @@ export function Kaufteildisposition() {
     }
 
     function getOptimaleBestellmenge(kaufteil: Kaufteil) {
-        return Math.ceil(Math.sqrt((2 * getGesamtBedarf(kaufteil) * kaufteil.bestellKosten) / (kaufteil.wert * 0.024)));
+        return Math.ceil(Math.sqrt((2 * getGesamtBedarf(kaufteil) * kaufteil.bestellKosten) / (kaufteil.wert * LAGER_KOSTEN_SATZ)));
     }
 
     function getGesamtBedarf(kaufteil: Kaufteil) {
@@ -201,11 +202,13 @@ export function Kaufteildisposition() {
                 <thead>
                 <tr>
                     <th>Kaufteil</th>
-                    <th>Verwendung</th>
+                    <th>Lieferzeit / Abweichung in Tagen</th>
+                    <th>Verwendung<br/>P1 / P2 / P3</th>
                     <th>Restbestand</th>
                     <th>Gesamt Bedarf</th>
-                    <th>Bedarf Periode {periode} / {periode + 1} / {periode + 2} / {periode + 3}</th>
+                    <th>Bedarf Periode<br/>{periode} / {periode + 1} / {periode + 2} / {periode + 3}</th>
                     <th>Diskontmenge</th>
+                    <th>Bestellkosten / Wert / Lagerkostensatz</th>
                     <th>Optimale Bestellmenge</th>
                     <th>Bestellung</th>
                     <th>Menge</th>
@@ -218,11 +221,13 @@ export function Kaufteildisposition() {
                         const id = kaufteil.id;
                         return <tr key={id}>
                             <td>{id}</td>
+                            <td>{kaufteil.lieferzeit} / {kaufteil.lieferzeitAbweichung}</td>
                             <td>{kaufteil.verwendungP1} / {kaufteil.verwendungP2} / {kaufteil.verwendungP3}</td>
                             <td>{kaufteil.restbestandVorperiode}</td>
                             <td>{getGesamtBedarf(kaufteil)}</td>
                             <td>{getWochenBedarf(periode, kaufteil)} / {getWochenBedarf(periode + 1, kaufteil)} / {getWochenBedarf(periode + 2, kaufteil)} / {getWochenBedarf(periode + 3, kaufteil)}</td>
                             <td>{kaufteil.diskontmenge}</td>
+                            <td>{kaufteil.bestellKosten}€ / {kaufteil.wert}€ / {LAGER_KOSTEN_SATZ}%</td>
                             <td>{getOptimaleBestellmenge(kaufteil)}</td>
                             <td><DropdownButton
                                 title={bestellungen[id].typ}
