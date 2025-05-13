@@ -19,6 +19,9 @@ export default function Navbar() {
             <Link className="navbar-item text-decoration-none text-dark px-1" to="/TeileProduktion">
                 {t('navbar.TeileProduktion')}
             </Link>
+            <Link className="navbar-item text-decoration-none text-dark px-1" to="/ReihenfolgeLosgroessenPlanung">
+                {t('navbar.ReihenfolgeLosgroessenPlanung')}
+            </Link>
             <Link className="navbar-item text-decoration-none text-dark px-1" to="/Minutenplanung">
                 {t('navbar.Minutenplanung')}
             </Link>
