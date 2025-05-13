@@ -6,6 +6,7 @@ import '../styles/minutenplanung.css'
 import { useGeneralStore } from '../helper/GeneralStoreContext';
 import { WorkingTime} from '../dtos/XMLOutput';
 import { Ruestzeiten } from '../dtos/Ruestzeiten';
+import { useTranslation } from 'react-i18next';
 
 type Zeile = {
   id: string;
@@ -22,6 +23,7 @@ Ruestzeiten.forEach(({ teilnummer, arbeitsplatz, zeit }) => {
 });
 
 export const MinutenPlanung = () => {
+  const{t} = useTranslation();
 //Allgemeines für den XML-Import und -Export
 const {generalStore, setGeneralStoreData} = useGeneralStore();
 
@@ -115,17 +117,16 @@ function save() {
 
 
 
-  const [zeilen] = useState<Zeile[]>([
-    {
-      id: 'hrk',
-      bezeichnung: 'Hinterrad',
-      typ: 'K',
-      sachNr: 'E4',
-      auftragsmenge: 200,
-      minutenLinks: Array.from({ length: 15 }, (_, i) =>
-        i === 9 ? 4 : i === 10 ? 3 : ''
-      ),
-    },
+  // const [zeilen] = useState<Zeile[]>([
+    const zeilen = useMemo<Zeile[]>(() => [
+  {
+    id: 'hrk',
+    bezeichnung: t('teil.hinterrad'),
+    typ: 'K',
+    sachNr: 'E4',
+    auftragsmenge: 200,
+    minutenLinks: Array.from({ length: 15 }, (_, i) => i === 9 ? 4 : i === 10 ? 3 : ''),
+  },
     {
       id: 'hrd',
       bezeichnung: '',
@@ -149,13 +150,13 @@ function save() {
 
     // Vorderrad
     {
-        id: 'vrk',
-        bezeichnung: 'Vorderrad',
-        typ: 'K',
-        sachNr: 'E7',
-        auftragsmenge: 200,
-        minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 9 ? 4 : i === 10 ? 3 : '')),
-      },
+    id: 'vrk',
+    bezeichnung: t('teil.vorderrad'),
+    typ: 'K',
+    sachNr: 'E7',
+    auftragsmenge: 200,
+    minutenLinks: Array.from({ length: 15 }, (_, i) => i === 9 ? 4 : i === 10 ? 3 : ''),
+  },
       {
         id: 'vrd',
         bezeichnung: '',
@@ -176,7 +177,7 @@ function save() {
       // Schutzblech hinten
       {
         id: 'shk',
-        bezeichnung: 'Schutzblech hinten',
+        bezeichnung: t('teil.schutzblech_hinten'),
         typ: 'K',
         sachNr: 'E10',
         auftragsmenge: 200,
@@ -202,7 +203,7 @@ function save() {
       // Schutzblech vorne
       {
         id: 'svk',
-        bezeichnung: 'Schutzblech vorne',
+        bezeichnung: t('teil.schutzblech_vorne'),
         typ: 'K',
         sachNr: 'E13',
         auftragsmenge: 200,
@@ -233,7 +234,7 @@ function save() {
   // Lenker
   {
     id: 'lenker_kdh',
-    bezeichnung: 'Lenker',
+    bezeichnung: t('teil.lenker'),
     typ: 'KDH',
     sachNr: 'E16',
     auftragsmenge: 200,
@@ -245,7 +246,7 @@ function save() {
   // Sattel
   {
     id: 'sattel_kdh',
-    bezeichnung: 'Sattel',
+    bezeichnung: t('teil.sattel'),
     typ: 'KDH',
     sachNr: 'E17',
     auftragsmenge: 200,
@@ -257,7 +258,7 @@ function save() {
   // Rahmen (K, D, H)
   {
     id: 'rahmen_k',
-    bezeichnung: 'Rahmen',
+    bezeichnung: t('teil.rahmen'),
     typ: 'K',
     sachNr: 'E18',
     auftragsmenge: 200,
@@ -287,7 +288,7 @@ function save() {
   },
   {
     id: 'pedale-kdh-e26',
-    bezeichnung: 'Pedale',
+    bezeichnung: t('teil.pedale'),
     typ: 'KDH',
     sachNr: 'E26',
     auftragsmenge: 200,
@@ -295,7 +296,7 @@ function save() {
   },
   {
     id: 'vorderrad_k-k-e49',
-    bezeichnung: 'Vorderrad komplett (cpl)',
+    bezeichnung: t('teil.vorderrad_cpl'),
     typ: 'K',
     sachNr: 'E49',
     auftragsmenge: 200,
@@ -319,7 +320,7 @@ function save() {
   },
   {
     id: 'rahm_u_räd-k-e50',
-    bezeichnung: 'Rahmen und Räder',
+    bezeichnung: t('teil.rahmen_und_raeder'),
     typ: 'K',
     sachNr: 'E50',
     auftragsmenge: 200,
@@ -343,7 +344,7 @@ function save() {
   },
   {
     id: 'fahrr_o_peda-k-e51',
-    bezeichnung: 'Fahrrad ohne Pedale',
+    bezeichnung: t('teil.fahrrad_ohne_pedale'),
     typ: 'K',
     sachNr: 'E51',
     auftragsmenge: 200,
@@ -367,7 +368,7 @@ function save() {
   },
   {
     id: 'fahrr_komplett-k-p1',
-    bezeichnung: 'Fahrrad komplett (cpl)',
+    bezeichnung: t('teil.fahrrad_komplett'),
     typ: 'K',
     sachNr: 'P1',
     auftragsmenge: 200,
@@ -389,7 +390,7 @@ function save() {
     auftragsmenge: 220,
     minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 3 ? 7 : '')),
   },
-  ]);
+  ], [t]);
   
   const [ruestzeitGesamt, setRuestzeitGesamt] = useState(Array(15).fill(0));
   const [rueckstandKapa, setRueckstandKapa] = useState<number[]>(Array(15).fill(0));
@@ -515,13 +516,13 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
   return (
     // <div className="container mt-4">
       <div className="container-fluid mt-4">
-      <h1>Minutenplanung</h1>
+      <h1>{t('Minutenplanung')}</h1>
       <div className="mb-3">
         <LinkContainer to="/">
-          <Button className="me-2">Startseite</Button>
+          <Button className="me-2">{t('Startseite')}</Button>
         </LinkContainer>
         <LinkContainer to="/Produktionsplanung">
-          <Button>Produktionsplanung</Button>
+          <Button>{t('Produktionsplanung')}</Button>
         </LinkContainer>
       </div>
 
@@ -529,12 +530,12 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
 
       <thead>
         <tr>
-          <th>Bezeichnung</th>
-          <th>Typ</th>
-          <th>SachNr</th>
-          <th>Auftragsmenge</th>
+          <th>{t('Bezeichnung')}</th>
+          <th>{t('Typ')}</th>
+          <th>{t('TeilNr.')}Nr</th>
+          <th>{t('Auftragsmenge')}</th>
           {Array.from({ length: 15 }).map((_, i) => (
-            <th colSpan={2} key={i}>{`Platz ${i + 1}`}</th>
+            <th colSpan={2} key={i}>{`${t('Platz')} ${i + 1}`}</th>
           ))}
         </tr>
       </thead>
@@ -558,7 +559,7 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
     </tr>
   ))}
         <tr id="kapabedarf_neu" className="label-fett">
-  <td colSpan={4} className="align-middle text-center">Kapazitätsbedarf (neu)</td>
+  <td colSpan={4} className="align-middle text-center">{t('Kapazitätsbedarf (neu)')}</td>
   {kapaBedarf.map((wert, i) => (
     <td colSpan={2} key={i} className="text-center">
       {wert}
@@ -569,7 +570,7 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
 <tr id="rüstzeit_neu" 
 // className="label-fett"
 >
-  <td colSpan={4}>Einfache Rüstzeit / Rüstzeit gesamt (neu)</td>
+  <td colSpan={4}>{t('Einfache Rüstzeit / Rüstzeit gesamt (neu)')}</td>
   
         {ruestzeitEinfach.map((einfach, i) => (
           <React.Fragment key={i}>
@@ -599,14 +600,14 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
 <tr id="rückstandKapaBedarf_neu" 
 // className="label-fett"
 >
-  <td colSpan={4} className="align-middle text-center">Kap.bed. (Rückstand Vorperiode)</td>
+  <td colSpan={4} className="align-middle text-center">{t('Kap.bed. (Rückstand Vorperiode)')}</td>
   {rueckstandKapa.map((value, i) => (
         <td colSpan={2} key={i}>{value}</td>
       ))}
 </tr>
 
 <tr id="rückstand_rüstzeit">
-  <td colSpan={4} className="align-middle text-center">Rüstzeit (Rückstand Vorperiode)</td>
+  <td colSpan={4} className="align-middle text-center">{t('Rüstzeit (Rückstand Vorperiode)')}</td>
   {rueckstandRuestzeit.map((wert, i) => (
     <td colSpan={2} key={i} className="text-center">
       <input
@@ -638,7 +639,7 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
 </tr> */}
 
 <tr className="fw-bold bg-light">
-  <td colSpan={4}>Gesamt Kapazitätsbedarf</td>
+  <td colSpan={4}>{t('Gesamt Kapazitätsbedarf')}</td>
   {gesamtKapaBedarf.map((val, i) => (
     <React.Fragment key={i}>
             <td colSpan={2} className="text-center">{val}</td>
@@ -647,7 +648,7 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
 </tr>
 
 <tr id="diff_max_wochenarbeitszeit" className="label-fett">
-  <td colSpan={4} className="align-middle text-center">Differenz zu max. Wochenarbeitszeit</td>
+  <td colSpan={4} className="align-middle text-center">{t('Differenz zu max. Wochenarbeitszeit')}</td>
   {diffMaxArbeitszeit.map((wert, i) => {
     let cellClass = "text-center";
     if (typeof wert === 'number') {
@@ -663,7 +664,7 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
   </tr>
 
   <tr id="schicht_u_überst" className="label-fett">
-  <td colSpan={4} className="align-middle text-center">Schichten und Überstunden / Überzeit pro Tag</td>
+  <td colSpan={4} className="align-middle text-center">{t('Schichten und Überstunden / Überzeit pro Tag')}</td>
   {schichtUndÜberstund.map((wert, i) => {
     // Klasse basierend auf dem Wert bestimmen
     let cellClass = "text-center";
@@ -684,7 +685,7 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
   </tr>
 
   <tr id="benötigte_überstunden" className="label-fett">
-  <td colSpan={4} className="text-center">Benötigte Überstunden / pro Tag</td>
+  <td colSpan={4} className="text-center">{t('Benötigte Überstunden / pro Tag')}</td>
 
   {benoetigteUeberstunden.map((wert, i) => {
     const num = Number(wert);
@@ -713,7 +714,7 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
   </tr>
 
   <tr id="benötigte_zusatzschichten" className="label-fett">
-  <td colSpan={4} className="text-center">Benötigte Zusatzschichten</td>
+  <td colSpan={4} className="text-center">{t('Benötigte Zusatzschichten')}</td>
 
   {benoetigteZusatzschichten.map((wert, i) => { 
       const num = Number(wert);
@@ -748,20 +749,20 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
   </tr>
   <tr>
   <td colSpan={34}>
-    <h4 className="mt-4">Warteliste je Arbeitsplatz (timeNeed je Teil)</h4>
+    <h4 className="mt-4">{t('Warteliste je Arbeitsplatz (timeNeed je Teil)')}</h4>
     <Table 
     // bordered size="sm" 
     striped bordered hover className="table-waitinglist">
       <thead>
         <tr>
-          <th>Arbeitsplatz</th>
-          <th>Teil-Nr.</th>
-          <th>Periode</th>
-          <th>Auftrag</th>
-          <th>Batch (von - bis)</th>
-          <th>Menge</th>
-          <th>timeNeed</th>
-          <th>Rüstzeit</th>
+          <th>{t('Arbeitsplatz')}</th>
+          <th>{t('Teil-Nr.')}</th>
+          <th>{t('Periode')}</th>
+          <th>{t('Auftrag')}</th>
+          <th>{t('Batch')}</th>
+          <th>{t('Menge')}</th>
+          <th>{t('timeNeed')}</th>
+          <th>{t('Rüstzeit')}</th>
         </tr>
       </thead>
       <tbody>
@@ -792,7 +793,7 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
     <Button className="Button"
                     onClick={save}
             >
-                Arbeitszeitplan speichern
+                {t('Arbeitszeitplan speichern')}
             </Button>
 
             <tr>
