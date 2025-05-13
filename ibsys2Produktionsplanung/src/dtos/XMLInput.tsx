@@ -84,7 +84,7 @@ type WaitingListWorkstations = {
 
 type WaitingWorkplace = {
     id: number;
-    timeened: number;
+    timeneed: number;
     waitinglist?: WaitingList[];
 };
 
@@ -95,7 +95,7 @@ type WaitingList = {
     lastbatch: number;
     item: number;
     amount: number;
-    timeNeed: number;
+    timeneed: number;
 };
 
 type WaitingListStock = {
