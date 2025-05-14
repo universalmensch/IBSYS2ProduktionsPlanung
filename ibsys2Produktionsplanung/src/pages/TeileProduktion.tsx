@@ -14,20 +14,19 @@ export function TeileProduktion() {
     const waitingWorkplace = input?.waitinglistworkstations.workplace || []
     const inBearbeitung = input?.ordersinwork?.workplace
 
-    const output = generalStore?.output?.input
-
     const produktionsPlan = generalStore?.produktionsPlan ?? new ProduktionsPlanDTO(0, 0, 0);
 
     produktionsPlan.p1ProduktionWoche0 = 100;
     produktionsPlan.p2ProduktionWoche0 = 200;
     produktionsPlan.p3ProduktionWoche0 = 300;
 
-    const [produktionsteile] = useState<Produktionsteil[]>(initializeProduktionsteile());
-    const [produktionsAuftraege, setProduktionsAuftraege] = useState<ProduktionsAuftragDTO[]>(initializeAuftraege());
+    const [produktionsteile, setProduktionsteile] = useState<Produktionsteil[]>(initializeProduktionsteile());
 
     function initializeProduktionsteile() {
-        const result = Produktionsteile.map(teil => new Produktionsteil(teil.id, teil.menge));
-        result.forEach((produktionsteil: Produktionsteil) => {
+        const result: Produktionsteil[] = [];
+        Produktionsteile.forEach((teil: Produktionsteil) => {
+            const produktionsteil = new Produktionsteil(teil.id, teil.planRestbestand)
+
             //set Restbestand
             if (restBestand !== undefined) {
                 produktionsteil.restBestand = restBestand.filter(r => r.id == produktionsteil.id)[0].amount
@@ -50,62 +49,164 @@ export function TeileProduktion() {
                 });
             }
 
-            if(warteschlange !== undefined) {
-                const uniquewarteschlange = warteschlange.filter((item, index, self) =>
-                    index === self.findIndex(b => b.item === item.item && b.order === item.order)
-                );
-                uniquewarteschlange.forEach(w =>{
-                    if(w.item == produktionsteil.id) {
-                        produktionsteil.warteschlange += Number(w.amount);
-                    }
-                });
-            }
+            const uniqueWarteschlange = warteschlange.filter((item, index, self) =>
+                index === self.findIndex(b => b.item === item.item && b.order === item.order)
+            );
+
+            uniqueWarteschlange.forEach(w => {
+                if (w.item == produktionsteil.id) {
+                    produktionsteil.warteschlange += Number(w.amount);
+                }
+            });
+
             //set In Bearbeitung
-             if (inBearbeitung !== undefined) {
+            if (inBearbeitung !== undefined) {
                 console.log(inBearbeitung)
-                //filter out duplikates in same order
+                //filter out duplikates in the same order
                 const uniqueBearbeitung = inBearbeitung.filter((item, index, self) =>
                     index === self.findIndex(b => b.item === item.item && b.order === item.order)
                 );
 
-                uniqueBearbeitung.forEach( b => {
-                    if(b.item == produktionsteil.id )
-                    produktionsteil.bearbeitung += Number(b.amount);
+                uniqueBearbeitung.forEach(b => {
+                    if (b.item == produktionsteil.id)
+                        produktionsteil.bearbeitung += Number(b.amount);
                 })
             }
+            result[produktionsteil.id] = produktionsteil
         })
 
-        //set Aufträge TODO ????
-        const teil1 = result.find(teil => teil.id === 1) ?? new Produktionsteil(1, 0);
+        // P1
+        const teil1 = result[1];
         teil1.auftraege = produktionsPlan.p1ProduktionWoche0
-        //set aus Warteschlange
+
+        const teil26 = result[26];
+        teil26.auftraege = teil1.menge
+        teil26.fuerWarteschlangen = teil1.warteschlange
+
+        const teil51 = result[51];
+        teil51.auftraege = teil1.menge
+        teil51.fuerWarteschlangen = teil1.warteschlange
+
+        const teil16 = result[16];
+        teil16.auftraege = teil51.menge
+        teil16.fuerWarteschlangen = teil51.warteschlange
+
+        const teil17 = result[17];
+        teil17.auftraege = teil51.menge
+        teil17.fuerWarteschlangen = teil51.warteschlange
+
+        const teil50 = result[50];
+        teil50.auftraege = teil51.menge
+        teil50.fuerWarteschlangen = teil51.warteschlange
+
+        const teil4 = result[4
+            ];
+        teil4.auftraege = teil50.menge
+        teil4.fuerWarteschlangen = teil50.warteschlange
+
+        const teil10 = result[10];
+        teil10.auftraege = teil50.menge
+        teil10.fuerWarteschlangen = teil50.warteschlange
+
+        const teil49 = result[49];
+        teil49.auftraege = teil50.menge
+        teil49.fuerWarteschlangen = teil50.warteschlange
+
+        const teil7 = result[7];
+        teil7.auftraege = teil49.menge
+        teil7.fuerWarteschlangen = teil49.warteschlange
+
+        const teil13 = result[13];
+        teil13.auftraege = teil49.menge
+        teil13.fuerWarteschlangen = teil49.warteschlange
+
+        const teil18 = result[18];
+        teil18.auftraege = teil49.menge
+        teil18.fuerWarteschlangen = teil49.warteschlange
+
+        // P2
+        const teil2 = result[2];
+        teil2.auftraege = produktionsPlan.p2ProduktionWoche0
+
+        const teil56 = result[56];
+        teil56.auftraege = teil2.menge
+        teil56.fuerWarteschlangen = teil2.warteschlange
+
+        const teil55 = result[55];
+        teil55.auftraege = teil56.menge
+        teil55.fuerWarteschlangen = teil56.warteschlange
+
+        const teil5 = result[5];
+        teil5.auftraege = teil55.menge
+        teil5.fuerWarteschlangen = teil55.warteschlange
+
+        const teil11 = result[11];
+        teil11.auftraege = teil55.menge
+        teil11.fuerWarteschlangen = teil55.warteschlange
+
+        const teil54 = result[54];
+        teil54.auftraege = teil55.menge
+        teil54.fuerWarteschlangen = teil55.warteschlange
+
+        const teil8 = result[8];
+        teil8.auftraege = teil54.menge
+        teil8.fuerWarteschlangen = teil54.warteschlange
+
+        const teil14 = result[14];
+        teil14.auftraege = teil54.menge
+        teil14.fuerWarteschlangen = teil54.warteschlange
+
+        const teil19 = result[19];
+        teil19.auftraege = teil54.menge
+        teil19.fuerWarteschlangen = teil54.warteschlange
+
+        // P2
+        const teil3 = result[3];
+        teil3.auftraege = produktionsPlan.p3ProduktionWoche0
+
+        const teil31 = result[31];
+        teil31.auftraege = teil3.menge
+        teil31.fuerWarteschlangen = teil3.warteschlange
+
+        const teil30 = result[30];
+        teil30.auftraege = teil31.menge
+        teil30.fuerWarteschlangen = teil31.warteschlange
+
+        const teil6 = result[6];
+        teil6.auftraege = teil30.menge
+        teil6.fuerWarteschlangen = teil30.warteschlange
+
+        const teil12 = result[12];
+        teil12.auftraege = teil30.menge
+        teil12.fuerWarteschlangen = teil30.warteschlange
+
+        const teil29 = result[29];
+        teil29.auftraege = teil30.menge
+        teil29.fuerWarteschlangen = teil30.warteschlange
+
+        const teil9 = result[9];
+        teil9.auftraege = teil29.menge
+        teil9.fuerWarteschlangen = teil29.warteschlange
+
+        const teil15 = result[15];
+        teil15.auftraege = teil29.menge
+        teil15.fuerWarteschlangen = teil29.warteschlange
+
+        const teil20 = result[20];
+        teil20.auftraege = teil29.menge
+        teil20.fuerWarteschlangen = teil29.warteschlange
+
         return result;
     }
 
-    function initializeAuftraege() {
-        //initialize all orders
-        const result: ProduktionsAuftragDTO[] = [];
-        Produktionsteile.forEach(produktionsteil => {
-            result[produktionsteil.id] = new ProduktionsAuftragDTO(produktionsteil.id, produktionsteil.menge, produktionsteil.planRestbestand);
-        })
-        return result;
-    }
-
-    function getProduktionsTeil(id: number) {
-        return produktionsteile.find(produktionsteil => produktionsteil.id === id)
-    }
-
-    // TODO rechnung zwischen restbestand und menge fehlt noch
-    function setAuftrag(kaufteilNummer: number, planRestbestand: number, menge: number) {
-        setProduktionsAuftraege(prevState => prevState.map((produktionsAuftrag) => {
-            if (produktionsAuftrag.kaufteilID === kaufteilNummer) {
-                // 16, 17 and 26 are used in all bikes
-                if (produktionsAuftrag.kaufteilID === 16 || produktionsAuftrag.kaufteilID === 17 || produktionsAuftrag.kaufteilID === 26) {
-                    planRestbestand !== -1 ? produktionsAuftrag.planRestBestand = Math.ceil(planRestbestand) * 3 : produktionsAuftrag;
-                    menge !== -1 ? produktionsAuftrag.menge = Math.ceil(menge) * 3 : produktionsAuftrag;
+    function setAuftrag(kaufteilNummer: number, planRestbestand: number) {
+        setProduktionsteile(prevState => prevState.map((produktionsAuftrag) => {
+            if (produktionsAuftrag.id === kaufteilNummer) {
+                // 16, 17 and 26 are used on all bikes
+                if (produktionsAuftrag.id === 16 || produktionsAuftrag.id === 17 || produktionsAuftrag.id === 26) {
+                    produktionsAuftrag.planRestbestand = Math.ceil(planRestbestand) * 3;
                 } else {
-                    planRestbestand !== -1 ? produktionsAuftrag.planRestBestand = Math.ceil(planRestbestand) : produktionsAuftrag;
-                    menge !== -1 ? produktionsAuftrag.menge = Math.ceil(menge) : produktionsAuftrag;
+                    produktionsAuftrag.planRestbestand = Math.ceil(planRestbestand);
                 }
             }
             return produktionsAuftrag;
@@ -113,41 +214,30 @@ export function TeileProduktion() {
     }
 
     function save() {
-        const production = produktionsAuftraege
+        const production = produktionsteile
             .filter(auftrag => auftrag.menge > 0)
-            .map(auftrag => ({
-                article: auftrag.kaufteilID,
-                quantity: auftrag.menge
-            }))
-
-        const updatedOutput = {
-            ...(output ?? {}),
-            production: {
-                ...(output?.productionlist ?? {}),
-                production: production
-            }
-        };
+            .map(auftrag =>
+                new ProduktionsAuftragDTO(auftrag.id, auftrag.menge)
+            )
 
         setGeneralStoreData({
             ...generalStore,
-            output: {
-                input: updatedOutput
-            }
+            produktionsAuftrag: production
         });
-    }
-
-    function getPlanRestBestand(id: number) {
-        if (id === 26 || id === 16 || id === 17) {
-            return produktionsAuftraege[id].planRestBestand / 3;
-        }
-        return produktionsAuftraege[id].planRestBestand;
     }
 
     function getMenge(id: number) {
         if (id === 26 || id === 16 || id === 17) {
-            return produktionsAuftraege[id].menge / 3;
+            return produktionsteile[id]?.menge / 3;
         }
-        return produktionsAuftraege[id].menge;
+        return produktionsteile[id]?.menge;
+    }
+
+    function getRestbestand(id: number) {
+        if (id === 26 || id === 16 || id === 17) {
+            return produktionsteile[id]?.restBestand / 3;
+        }
+        return produktionsteile[id]?.restBestand;
     }
 
     return (
@@ -177,28 +267,21 @@ export function TeileProduktion() {
 
                                 }</tr>
                                 <tr key={Math.random()}>
-                                    <td>{getProduktionsTeil(id)?.id}</td>
-                                    <td>{getProduktionsTeil(id)?.auftraege}</td>
-                                    <td>{getProduktionsTeil(id)?.fuerWarteschlangen}</td>
+                                    <td>{produktionsteile[id]?.id}</td>
+                                    <td>{produktionsteile[id]?.auftraege}</td>
+                                    <td>{produktionsteile[id]?.fuerWarteschlangen}</td>
                                     <td>
                                         <input
                                             min={0}
                                             type="number"
-                                            value={getPlanRestBestand(id)}
-                                            onChange={(e) => setAuftrag(id, Number(e.target.value), -1)}
+                                            value={produktionsteile[id]?.planRestbestand}
+                                            onChange={(e) => setAuftrag(id, Number(e.target.value))}
                                         />
                                     </td>
-                                    <td>{getProduktionsTeil(id)?.restBestand}</td>
-                                    <td>{getProduktionsTeil(id)?.warteschlange}</td>
-                                    <td>{getProduktionsTeil(id)?.bearbeitung}</td>
-                                    <td>
-                                        <input
-                                            min={0}
-                                            type="number"
-                                            value={getMenge(id)}
-                                            onChange={(e) => setAuftrag(id, -1, Number(e.target.value))}
-                                        />
-                                    </td>
+                                    <td>{getRestbestand(id)}</td>
+                                    <td>{produktionsteile[id]?.warteschlange}</td>
+                                    <td>{produktionsteile[id]?.bearbeitung}</td>
+                                    <td>{getMenge(id)}</td>
                                 </tr>
                                 <tr key={Math.random()}>{
                                     //extra spaces for the structure of the table

@@ -6,7 +6,7 @@ import {useGeneralStore} from "../helper/GeneralStoreContext.tsx";
 export function ReihenfolgeLosgroessenPlanung() {
     const {generalStore, setGeneralStoreData} = useGeneralStore()
     const output = generalStore?.output?.input
-    const Auftraege = generalStore?.produktionsAuftrag ?? [new ProduktionsAuftragDTO(0, 0, 0)]
+    const Auftraege = generalStore?.produktionsAuftrag ?? [new ProduktionsAuftragDTO(0, 0)]
 
     const [auftraege, setAuftraege] = useState<ProduktionsAuftragDTO[]>(Auftraege);
 
@@ -21,7 +21,7 @@ export function ReihenfolgeLosgroessenPlanung() {
     };
 
     const addAuftrag = () => {
-        setAuftraege([...auftraege, new ProduktionsAuftragDTO(0, 0, 0)]);
+        setAuftraege([...auftraege, new ProduktionsAuftragDTO(0, 0)]);
     };
 
     const save = () => {
@@ -56,15 +56,13 @@ export function ReihenfolgeLosgroessenPlanung() {
         // Original bekommt neue Menge
         const updatedOriginal = new ProduktionsAuftragDTO(
             original.kaufteilID,
-            halbMenge,
-            original.planRestBestand
+            halbMenge
         );
 
         // Duplikat mit der anderen Hälfte
         const duplicated = new ProduktionsAuftragDTO(
             original.kaufteilID,
-            restMenge,
-            original.planRestBestand
+            restMenge
         );
 
         const updated = [...auftraege];
@@ -110,7 +108,7 @@ export function ReihenfolgeLosgroessenPlanung() {
                         <Row className="align-items-end">
                             <Col md={3}>
                                 <Form.Group controlId={`kaufteilID-${index}`}>
-                                    <Form.Label>Kaufteil ID</Form.Label>
+                                    <Form.Label>Produktionsteil ID</Form.Label>
                                     <Form.Control
                                         type="number"
                                         value={auftrag.kaufteilID}

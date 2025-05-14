@@ -70,14 +70,8 @@ export class Produktionsteil {
         this._bearbeitung = value;
     }
 
-    private _menge?: number;
-
     get menge(): number {
-        return this._menge ?? 0;
-    }
-
-    set menge(value: number) {
-        this._menge = value;
+        return this.auftraege + this.fuerWarteschlangen + this.planRestbestand - this.restBestand - this.warteschlange - this.bearbeitung;
     }
 }
 
