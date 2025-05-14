@@ -1,18 +1,17 @@
 import {useState} from 'react';
 import {Button, Card, Col, Form, Row} from 'react-bootstrap';
 import {ProduktionsAuftragDTO} from "../dtos/ProduktionsAuftragDTO.tsx";
+import {useGeneralStore} from "../helper/GeneralStoreContext.tsx";
 
 export function ReihenfolgeLosgroessenPlanung() {
-    const [auftraege, setAuftraege] = useState<ProduktionsAuftragDTO[]>([
-        new ProduktionsAuftragDTO(1, 100, 0),
-        new ProduktionsAuftragDTO(2, 200, 0),
-    ]);
+    const {generalStore, setGeneralStoreData} = useGeneralStore()
+    const output = generalStore?.output?.input
+    const Auftraege = generalStore?.produktionsAuftrag ?? [new ProduktionsAuftragDTO(0, 0, 0)]
+
+    const [auftraege, setAuftraege] = useState<ProduktionsAuftragDTO[]>(Auftraege);
 
     const resetProduktionsAuftraege = () => {
-        setAuftraege([
-            new ProduktionsAuftragDTO(1, 100, 0),
-            new ProduktionsAuftragDTO(2, 200, 0),
-        ]);
+        setAuftraege(Auftraege);
     };
 
     const updateAuftrag = (index: number, field: keyof ProduktionsAuftragDTO, value: number) => {
@@ -23,6 +22,30 @@ export function ReihenfolgeLosgroessenPlanung() {
 
     const addAuftrag = () => {
         setAuftraege([...auftraege, new ProduktionsAuftragDTO(0, 0, 0)]);
+    };
+
+    const save = () => {
+        const newProduktion = auftraege
+            .filter(produktionsAuftrag => produktionsAuftrag.menge > 0)
+            .map(produktionsAuftrag => ({
+                article: produktionsAuftrag.kaufteilID,
+                quantity: produktionsAuftrag.menge
+            }))
+
+        const updatedOutput = {
+            ...(output ?? {}),
+            productionlist: {
+                ...(output?.productionlist ?? {}),
+                production: newProduktion
+            }
+        };
+
+        setGeneralStoreData({
+            ...generalStore,
+            output: {
+                input: updatedOutput
+            }
+        });
     };
 
     const duplicateAuftrag = (index: number) => {
@@ -82,7 +105,7 @@ export function ReihenfolgeLosgroessenPlanung() {
             <br/>
             <br/>
             {auftraege.map((auftrag, index) => (
-                <Card key={index} className="mb-3">
+                <Card key={index + "key"} className="mb-3">
                     <Card.Body>
                         <Row className="align-items-end">
                             <Col md={3}>
@@ -129,10 +152,18 @@ export function ReihenfolgeLosgroessenPlanung() {
                     </Card.Body>
                 </Card>
             ))}
-
-            <Button onClick={addAuftrag} variant="primary">
-                Neuen Auftrag hinzufügen
-            </Button>
+            <Row className="align-items-end">
+                <Col md={6}>
+                    <Button onClick={addAuftrag} variant="primary">
+                        Neuen Auftrag hinzufügen
+                    </Button>
+                </Col>
+                <Col md={6}>
+                    <Button onClick={save} variant="primary">
+                        Aufträge speichern
+                    </Button>
+                </Col>
+            </Row>
         </div>
     );
-};
+}
