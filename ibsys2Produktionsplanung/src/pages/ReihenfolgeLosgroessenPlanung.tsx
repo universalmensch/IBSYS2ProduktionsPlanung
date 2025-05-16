@@ -113,6 +113,7 @@ export function ReihenfolgeLosgroessenPlanung() {
                                         type="number"
                                         value={auftrag.kaufteilID}
                                         min={0}
+
                                         onChange={(e) => {
                                             // removes leading 0
                                             // @ts-ignore
@@ -129,6 +130,7 @@ export function ReihenfolgeLosgroessenPlanung() {
                                         type="number"
                                         value={auftrag.menge}
                                         min={0}
+
                                         onChange={(e) => {
                                             // removes leading 0
                                             // @ts-ignore
