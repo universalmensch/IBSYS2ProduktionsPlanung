@@ -7,13 +7,15 @@ import {useState} from "react";
 import {BestellTyp, BestellungDTO} from "../dtos/BestellungDTO.tsx";
 
 export function Kaufteildisposition() {
-    const LAGER_KOSTEN_SATZ = 0.024;
     const {generalStore, setGeneralStoreData} = useGeneralStore()
 
     const input = generalStore?.input?.results
     const periode = input ? Number(input.period) + 1 : 0
     const orders = input?.futureinwardstockmovement.order
     const restBestand = input?.warehousestock?.article
+
+    const lagerWert = restBestand?.reduce((sum, article) => sum + ((article.amount ?? 0) * (article.price ?? 0)), 0) ?? 0
+    const LAGER_KOSTEN_SATZ = 0.3 + (lagerWert > 250000 ? 260000 / lagerWert : 0);
 
     const output = generalStore?.output?.input
     const newOrders = output?.orderlist
@@ -109,12 +111,16 @@ export function Kaufteildisposition() {
         }))
     }
 
+    function getJahresBedarf(kaufteil: Kaufteil) {
+        return Math.ceil((getGesamtBedarf(kaufteil) / 28) * 365);
+    }
+
     function getBedarf(kaufteil: Kaufteil, p1: number, p2: number, p3: number) {
         return kaufteil.verwendungP1 * p1 + kaufteil.verwendungP2 * p2 + kaufteil.verwendungP3 * p3;
     }
 
     function getOptimaleBestellmenge(kaufteil: Kaufteil) {
-        return Math.ceil(Math.sqrt((2 * getGesamtBedarf(kaufteil) * kaufteil.bestellKosten) / (kaufteil.wert * LAGER_KOSTEN_SATZ)));
+        return Math.ceil(Math.sqrt((2 * getJahresBedarf(kaufteil) * kaufteil.bestellKosten * (bestellungen[kaufteil.id].typ === BestellTyp.EIL ? 10 : 1)) / (kaufteil.wert * LAGER_KOSTEN_SATZ)));
     }
 
     function getGesamtBedarf(kaufteil: Kaufteil) {
@@ -245,6 +251,7 @@ export function Kaufteildisposition() {
             }
 
             <br/>
+            <p>aktueller Lagerwert: {lagerWert.toFixed(2)} €</p>
 
             <Table>
                 <thead>
@@ -259,7 +266,7 @@ export function Kaufteildisposition() {
                     <th>Gesamt Bedarf</th>
                     <th>Bedarf Periode<br/>{periode} / {periode + 1} / {periode + 2} / {periode + 3}</th>
                     <th>Diskontmenge</th>
-                    <th>Bestellkosten / Wert / Lagerkostensatz</th>
+                    <th>Jahresbedarf/ Bestellkosten /<br/>Wert / Lagerkostensatz</th>
                     <th>Optimale Bestellmenge</th>
                     <th>Bestellung</th>
                     <th>Menge</th>
@@ -278,7 +285,10 @@ export function Kaufteildisposition() {
                             <td>{getGesamtBedarf(kaufteil)}</td>
                             <td>{getWochenBedarf(periode, kaufteil)} / {getWochenBedarf(periode + 1, kaufteil)} / {getWochenBedarf(periode + 2, kaufteil)} / {getWochenBedarf(periode + 3, kaufteil)}</td>
                             <td>{kaufteil.diskontmenge}</td>
-                            <td>{kaufteil.bestellKosten}€ / {kaufteil.wert}€ / {LAGER_KOSTEN_SATZ * 100}%</td>
+                            <td>{getJahresBedarf(kaufteil)} / {kaufteil.bestellKosten * (bestellungen[id].typ === BestellTyp.EIL ? 10 : 1)}€
+                                / {kaufteil.wert}€
+                                / {(LAGER_KOSTEN_SATZ * 100).toFixed(2)}%
+                            </td>
                             <td>{getOptimaleBestellmenge(kaufteil)}</td>
                             <td><DropdownButton
                                 title={bestellungen[id].typ}
