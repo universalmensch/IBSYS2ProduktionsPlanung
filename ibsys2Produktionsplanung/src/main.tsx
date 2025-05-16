@@ -11,6 +11,7 @@ import {GeneralStoreProvider} from './helper/GeneralStoreContext'; // Import the
 import Navbar from './components/navbar';
 import './i18n.tsx';
 import {TeileProduktion} from "./pages/TeileProduktion.tsx";
+import {ReihenfolgeLosgroessenPlanung} from "./pages/ReihenfolgeLosgroessenPlanung.tsx";
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -22,7 +23,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                     <Route path="/" element={<Startseite/>}></Route>
                     <Route path="/Produktionsplanung" element={<Produktionsplanung/>}></Route>
                     <Route path="/TeileProduktion" element={<TeileProduktion/>}></Route>
-                    <Route path="/Minutenplanung" element={<MinutenPlanung/>}></Route>
+                    <Route path="/ReihenfolgeLosgroessenPlanung" element={<ReihenfolgeLosgroessenPlanung/>}></Route>
+                    <Route path="/Minutenplanung" element={<Minutenplanung/>}></Route>
                     <Route path="/Kaufteildisposition" element={<Kaufteildisposition/>}></Route>
                 </Routes>
             </Router>
