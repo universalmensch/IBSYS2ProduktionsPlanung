@@ -24,22 +24,6 @@ export function Kaufteildisposition() {
     const [alteBestellungen] = useState<BestellungDTO[]>(initializeAlteBestellungen());
     const [initialisierteKaufteile] = useState<Kaufteil[]>(initializeKaufteile());
 
-    produktionsPlan.p1ProduktionWoche0 = 100;
-    produktionsPlan.p2ProduktionWoche0 = 200;
-    produktionsPlan.p3ProduktionWoche0 = 300;
-
-    produktionsPlan.p1ProduktionWoche1 = 101;
-    produktionsPlan.p2ProduktionWoche1 = 201;
-    produktionsPlan.p3ProduktionWoche1 = 301;
-
-    produktionsPlan.p1ProduktionWoche2 = 102;
-    produktionsPlan.p2ProduktionWoche2 = 202;
-    produktionsPlan.p3ProduktionWoche2 = 302;
-
-    produktionsPlan.p1ProduktionWoche3 = 103;
-    produktionsPlan.p2ProduktionWoche3 = 203;
-    produktionsPlan.p3ProduktionWoche3 = 303;
-
     function initializeAlteBestellungen() {
         const result: BestellungDTO[] = [];
 
@@ -312,7 +296,12 @@ export function Kaufteildisposition() {
                                     min={0}
                                     type="number"
                                     value={bestellungen[id].menge}
-                                    onChange={(e) => setBestellung(id, bestellungen[id].typ, Number(e.target.value))}
+                                    onChange={(e) => {
+                                        // removes leading 0
+                                        // @ts-ignore
+                                        e.target.value = Math.abs(e.target.value);
+                                        setBestellung(id, bestellungen[id].typ, Number(e.target.value))
+                                    }}
                                 />
                             </td>
                             <td>{bestellungen[id].bestellPeriode}</td>

@@ -113,7 +113,12 @@ export function ReihenfolgeLosgroessenPlanung() {
                                         type="number"
                                         value={auftrag.kaufteilID}
                                         min={0}
-                                        onChange={(e) => updateAuftrag(index, 'kaufteilID', Number(e.target.value))}
+                                        onChange={(e) => {
+                                            // removes leading 0
+                                            // @ts-ignore
+                                            e.target.value = Math.abs(e.target.value);
+                                            updateAuftrag(index, 'kaufteilID', Number(e.target.value));
+                                        }}
                                     />
                                 </Form.Group>
                             </Col>
@@ -124,7 +129,12 @@ export function ReihenfolgeLosgroessenPlanung() {
                                         type="number"
                                         value={auftrag.menge}
                                         min={0}
-                                        onChange={(e) => updateAuftrag(index, 'menge', Number(e.target.value))}
+                                        onChange={(e) => {
+                                            // removes leading 0
+                                            // @ts-ignore
+                                            e.target.value = Math.abs(e.target.value);
+                                            updateAuftrag(index, 'menge', Number(e.target.value));
+                                        }}
                                     />
                                 </Form.Group>
                             </Col>
