@@ -24,7 +24,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                     <Route path="/Produktionsplanung" element={<Produktionsplanung/>}></Route>
                     <Route path="/TeileProduktion" element={<TeileProduktion/>}></Route>
                     <Route path="/ReihenfolgeLosgroessenPlanung" element={<ReihenfolgeLosgroessenPlanung/>}></Route>
-                    <Route path="/Minutenplanung" element={<Minutenplanung/>}></Route>
+                    <Route path="/Minutenplanung" element={<MinutenPlanung/>}></Route>
                     <Route path="/Kaufteildisposition" element={<Kaufteildisposition/>}></Route>
                 </Routes>
             </Router>

@@ -17,10 +17,6 @@ export function TeileProduktion() {
 
     const produktionsPlan = generalStore?.produktionsPlan ?? new ProduktionsPlanDTO(0, 0, 0);
 
-    produktionsPlan.p1ProduktionWoche0 = 100;
-    produktionsPlan.p2ProduktionWoche0 = 200;
-    produktionsPlan.p3ProduktionWoche0 = 300;
-
     const [produktionsteile, setProduktionsteile] = useState<Produktionsteil[]>(initializeProduktionsteile());
 
     function initializeProduktionsteile() {

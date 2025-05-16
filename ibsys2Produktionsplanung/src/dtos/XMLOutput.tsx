@@ -50,7 +50,7 @@ type Production = {
     quantity: number;
 };
 
-type WorkingTime = {
+export type WorkingTime = {
     station: number;
     shift: number;
     overtime: number;

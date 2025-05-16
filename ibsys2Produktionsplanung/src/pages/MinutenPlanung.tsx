@@ -1,635 +1,643 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Table, Button } from 'react-bootstrap';
-import { LinkContainer } from 'react-router-bootstrap';
+import React, {useEffect, useMemo, useState} from 'react';
+import {Button, Table} from 'react-bootstrap';
+import {LinkContainer} from 'react-router-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/minutenplanung.css'
-import { useGeneralStore } from '../helper/GeneralStoreContext';
-import { WorkingTime} from '../dtos/XMLOutput';
-import { Ruestzeiten } from '../dtos/Ruestzeiten';
-import { useTranslation } from 'react-i18next';
+import {useGeneralStore} from '../helper/GeneralStoreContext';
+import {WorkingTime} from '../dtos/XMLOutput';
+import {Ruestzeiten} from '../dtos/Ruestzeiten';
+import {useTranslation} from 'react-i18next';
 
 type Zeile = {
-  id: string;
-  bezeichnung: string;
-  typ: string;
-  sachNr: string;
-  auftragsmenge: number;
-  minutenLinks: (number | '')[];
+    id: string;
+    bezeichnung: string;
+    typ: string;
+    sachNr: string;
+    auftragsmenge: number;
+    minutenLinks: (number | '')[];
 };
 
 const ruestzeitMap = new Map();
-Ruestzeiten.forEach(({ teilnummer, arbeitsplatz, zeit }) => {
-  ruestzeitMap.set(`${arbeitsplatz}_${teilnummer}`, zeit);
+Ruestzeiten.forEach(({teilnummer, arbeitsplatz, zeit}) => {
+    ruestzeitMap.set(`${arbeitsplatz}_${teilnummer}`, zeit);
 });
 
 export const MinutenPlanung = () => {
-  const{t} = useTranslation();
-//Allgemeines für den XML-Import und -Export
-const {generalStore, setGeneralStoreData} = useGeneralStore();
+    const {t} = useTranslation();
 
-console.log(generalStore)
-const input = generalStore?.input?.results;
-const output = generalStore?.output?.input;
-const wartelistenArbeitsplatz = input?.waitinglistworkstations.workplace;
+    const {generalStore, setGeneralStoreData} = useGeneralStore();
 
-const alleWaitingListEintraege = wartelistenArbeitsplatz?.flatMap(workplace => {
-  const waitingList = workplace.waitinglist;
+    const input = generalStore?.input?.results;
+    const output = generalStore?.output?.input;
+    const wartelistenArbeitsplatz = input?.waitinglistworkstations.workplace;
+    const auftraege = output?.productionlist ?? {production: [{article: 0, quantity: 0}]}
 
-  const liste = Array.isArray(waitingList) ? waitingList : waitingList ? [waitingList] : [];
+    const alleWaitingListEintraege = wartelistenArbeitsplatz?.flatMap(workplace => {
+        const waitingList = workplace.waitinglist;
 
-  return liste.map(entry => ({
-    arbeitsplatzId: workplace.id,
-    period: entry.period,
-    order: entry.order,
-    item: entry.item,
-    timeNeed: entry.timeneed,
-    amount: entry.amount,
-    firstbatch: entry.firstbatch,
-    lastbatch: entry.lastbatch
-  }));
-});
+        const liste = Array.isArray(waitingList) ? waitingList : waitingList ? [waitingList] : [];
 
-const alleWaitingListEintraegeMitRuestzeit = useMemo(() => {
-  return alleWaitingListEintraege?.map(entry => {
-    const key = `${entry.arbeitsplatzId}_${entry.item}`;
-    const zeit = ruestzeitMap.get(key) ?? 0;
-    return {
-      ...entry,
-      zeit
-    };
-  });
-}, [alleWaitingListEintraege]);
+        return liste.map(entry => ({
+            arbeitsplatzId: workplace.id,
+            period: entry.period,
+            order: entry.order,
+            item: entry.item,
+            timeNeed: entry.timeneed,
+            amount: entry.amount,
+            firstbatch: entry.firstbatch,
+            lastbatch: entry.lastbatch
+        }));
+    });
+
+    const alleWaitingListEintraegeMitRuestzeit = useMemo(() => {
+        return alleWaitingListEintraege?.map(entry => {
+            const key = `${entry.arbeitsplatzId}_${entry.item}`;
+            const zeit = ruestzeitMap.get(key) ?? 0;
+            return {
+                ...entry,
+                zeit
+            };
+        });
+    }, [alleWaitingListEintraege]);
 //Funktion für den Import der XML-Daten
-useEffect(() => {
-  if (!wartelistenArbeitsplatz) return;
+    useEffect(() => {
+        if (!wartelistenArbeitsplatz) return;
 
-  const rueckstandArray = Array(15).fill(0);
+        const rueckstandArray = Array(15).fill(0);
 
-  wartelistenArbeitsplatz.forEach((workplace) => {
-    const { id, timeneed } = workplace;
+        wartelistenArbeitsplatz.forEach((workplace) => {
+            const {id, timeneed} = workplace;
 
-    const arrayIndex = id - 1;
+            const arrayIndex = id - 1;
 
-    if (arrayIndex >= 0 && arrayIndex < 15) {
-      rueckstandArray[arrayIndex] = Number(timeneed) || 0;  // ← Fix hier
-    }
-  });
+            if (arrayIndex >= 0 && arrayIndex < 15) {
+                rueckstandArray[arrayIndex] = Number(timeneed) || 0;  // ← Fix hier
+            }
+        });
 
-  setRueckstandKapa(rueckstandArray);
-}, [wartelistenArbeitsplatz]);
+        setRueckstandKapa(rueckstandArray);
+    }, [wartelistenArbeitsplatz]);
 
 
 //Import der Wartelisten mit den einzelnen wartenden Teilen, für die Rüstrückstandszeit
 
 
-
 //Funktion für den Export der XML-Daten:
-function save() {
-  const workingTimes: WorkingTime[] = benoetigteZusatzschichten.map((shift, index) => {
-    const overtime = benoetigteUeberstunden[index] === '' ? 0 : Number(benoetigteUeberstunden[index]);
-    const shiftVal = shift === '' ? 0 : Number(shift);
+    function save() {
+        const workingTimes: WorkingTime[] = benoetigteZusatzschichten.map((shift, index) => {
+            const overtime = benoetigteUeberstunden[index] === '' ? 0 : Number(benoetigteUeberstunden[index]);
+            const shiftVal = shift === '' ? 0 : Number(shift);
 
-    return {
-      station: index + 1,
-      shift: shiftVal,
-      overtime: overtime
-    };
-  });
+            return {
+                station: index + 1,
+                shift: shiftVal,
+                overtime: overtime
+            };
+        });
 
-  const updatedOutput = {
-    ...(output ?? {}),
-    workingtimelist: {
-      workingtime: workingTimes
+        const updatedOutput = {
+            ...(output ?? {}),
+            workingtimelist: {
+                workingtime: workingTimes
+            }
+        };
+
+        setGeneralStoreData({
+            ...generalStore,
+            output: {
+                ...(generalStore?.output ?? {}),
+                input: updatedOutput
+            }
+        });
+
+        console.log("Gespeicherte Arbeitszeiten für XML:", workingTimes);
     }
-  };
 
-  setGeneralStoreData({
-    ...generalStore,
-    output: {
-      ...(generalStore.output ?? {}),
-      input: updatedOutput
-    }
-  });
+    const getAlleAuftraege = (articleId: number) =>
+        auftraege.production
+            .filter(auftrag => auftrag.article === articleId)
+            .reduce((sum, auftrag) => sum + (auftrag.quantity ?? 0), 0);
 
-  console.log("Gespeicherte Arbeitszeiten für XML:", workingTimes);
-}
-
-
-
-
-  // const [zeilen] = useState<Zeile[]>([
+    // const [zeilen] = useState<Zeile[]>([
     const zeilen = useMemo<Zeile[]>(() => [
-  {
-    id: 'hrk',
-    bezeichnung: t('teil.hinterrad'),
-    typ: 'K',
-    sachNr: 'E4',
-    auftragsmenge: 200,
-    minutenLinks: Array.from({ length: 15 }, (_, i) => i === 9 ? 4 : i === 10 ? 3 : ''),
-  },
-    {
-      id: 'hrd',
-      bezeichnung: '',
-      typ: 'D',
-      sachNr: 'E5',
-      auftragsmenge: 100,
-      minutenLinks: Array.from({ length: 15 }, (_, i) =>
-        i === 9 ? 4 : i === 10 ? 3 : ''
-      ),
-    },
-    {
-      id: 'hrh',
-      bezeichnung: '',
-      typ: 'H',
-      sachNr: 'E6',
-      auftragsmenge: 220,
-      minutenLinks: Array.from({ length: 15 }, (_, i) =>
-        i === 9 ? 4 : i === 10 ? 3 : ''
-      ),
-    },
+        {
+            id: 'hrk',
+            bezeichnung: t('teil.hinterrad'),
+            typ: 'K',
+            sachNr: 'E4',
+            auftragsmenge: getAlleAuftraege(4),
+            minutenLinks: Array.from({length: 15}, (_, i) => i === 9 ? 4 : i === 10 ? 3 : ''),
+        },
+        {
+            id: 'hrd',
+            bezeichnung: '',
+            typ: 'D',
+            sachNr: 'E5',
+            auftragsmenge: getAlleAuftraege(5),
+            minutenLinks: Array.from({length: 15}, (_, i) =>
+                i === 9 ? 4 : i === 10 ? 3 : ''
+            ),
+        },
+        {
+            id: 'hrh',
+            bezeichnung: '',
+            typ: 'H',
+            sachNr: 'E6',
+            auftragsmenge: getAlleAuftraege(6),
+            minutenLinks: Array.from({length: 15}, (_, i) =>
+                i === 9 ? 4 : i === 10 ? 3 : ''
+            ),
+        },
 
-    // Vorderrad
-    {
-    id: 'vrk',
-    bezeichnung: t('teil.vorderrad'),
-    typ: 'K',
-    sachNr: 'E7',
-    auftragsmenge: 200,
-    minutenLinks: Array.from({ length: 15 }, (_, i) => i === 9 ? 4 : i === 10 ? 3 : ''),
-  },
-      {
-        id: 'vrd',
-        bezeichnung: '',
-        typ: 'D',
-        sachNr: 'E8',
-        auftragsmenge: 100,
-        minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 9 ? 4 : i === 10 ? 3 : '')),
-      },
-      {
-        id: 'vrh',
-        bezeichnung: '',
-        typ: 'H',
-        sachNr: 'E9',
-        auftragsmenge: 220,
-        minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 9 ? 4 : i === 10 ? 3 : '')),
-      },
-  
-      // Schutzblech hinten
-      {
-        id: 'shk',
-        bezeichnung: t('teil.schutzblech_hinten'),
-        typ: 'K',
-        sachNr: 'E10',
-        auftragsmenge: 200,
-        minutenLinks: Array.from({ length: 15 }, (_, i) => ([6, 8, 11, 12].includes(i) ? 3 : i === 7 ? 1 : i === 6 ? 2 : '')),
-      },
-      {
-        id: 'shd',
-        bezeichnung: '',
-        typ: 'D',
-        sachNr: 'E11',
-        auftragsmenge: 100,
-        minutenLinks: Array.from({ length: 15 }, (_, i) => ([6, 7, 8, 11, 12].includes(i) ? (i === 7 ? 2 : 3) : '')),
-      },
-      {
-        id: 'shh',
-        bezeichnung: '',
-        typ: 'H',
-        sachNr: 'E12',
-        auftragsmenge: 220,
-        minutenLinks: Array.from({ length: 15 }, (_, i) => ([6, 7, 8, 11, 12].includes(i) ? (i === 7 ? 2 : 3) : '')),
-      },
-  
-      // Schutzblech vorne
-      {
-        id: 'svk',
-        bezeichnung: t('teil.schutzblech_vorne'),
-        typ: 'K',
-        sachNr: 'E13',
-        auftragsmenge: 200,
-        minutenLinks: Array.from({ length: 15 }, (_, i) => ([6, 8, 11, 12].includes(i) ? 3 : i === 7 ? 1 : i === 6 ? 2 : '')),
-      },
-      
-  {
-    id: 'schutzblech_v_d',
-    bezeichnung: '',
-    typ: 'D',
-    sachNr: 'E14',
-    auftragsmenge: 100,
-    minutenLinks: Array.from({ length: 15 }, (_, i) =>
-      [6, 7].includes(i) ? 2 : i === 8 || i === 11 ? 3 : i === 12 ? 2 : ''
-    ),
-  },
-  {
-    id: 'schutzblech_v_h',
-    bezeichnung: '',
-    typ: 'H',
-    sachNr: 'E15',
-    auftragsmenge: 220,
-    minutenLinks: Array.from({ length: 15 }, (_, i) =>
-      [6, 7].includes(i) ? 2 : i === 8 || i === 11 ? 3 : i === 12 ? 2 : ''
-    ),
-  },
+        // Vorderrad
+        {
+            id: 'vrk',
+            bezeichnung: t('teil.vorderrad'),
+            typ: 'K',
+            sachNr: 'E7',
+            auftragsmenge: getAlleAuftraege(7),
+            minutenLinks: Array.from({length: 15}, (_, i) => i === 9 ? 4 : i === 10 ? 3 : ''),
+        },
+        {
+            id: 'vrd',
+            bezeichnung: '',
+            typ: 'D',
+            sachNr: 'E8',
+            auftragsmenge: getAlleAuftraege(8),
+            minutenLinks: Array.from({length: 15}, (_, i) => (i === 9 ? 4 : i === 10 ? 3 : '')),
+        },
+        {
+            id: 'vrh',
+            bezeichnung: '',
+            typ: 'H',
+            sachNr: 'E9',
+            auftragsmenge: getAlleAuftraege(9),
+            minutenLinks: Array.from({length: 15}, (_, i) => (i === 9 ? 4 : i === 10 ? 3 : '')),
+        },
 
-  // Lenker
-  {
-    id: 'lenker_kdh',
-    bezeichnung: t('teil.lenker'),
-    typ: 'KDH',
-    sachNr: 'E16',
-    auftragsmenge: 200,
-    minutenLinks: Array.from({ length: 15 }, (_, i) =>
-      i === 5 ? 2 : i === 13 ? 3 : ''
-    ),
-  },
+        // Schutzblech hinten
+        {
+            id: 'shk',
+            bezeichnung: t('teil.schutzblech_hinten'),
+            typ: 'K',
+            sachNr: 'E10',
+            auftragsmenge: getAlleAuftraege(10),
+            minutenLinks: Array.from({length: 15}, (_, i) => ([6, 8, 11, 12].includes(i) ? 3 : i === 7 ? 1 : i === 6 ? 2 : '')),
+        },
+        {
+            id: 'shd',
+            bezeichnung: '',
+            typ: 'D',
+            sachNr: 'E11',
+            auftragsmenge: getAlleAuftraege(11),
+            minutenLinks: Array.from({length: 15}, (_, i) => ([6, 7, 8, 11, 12].includes(i) ? (i === 7 ? 2 : 3) : '')),
+        },
+        {
+            id: 'shh',
+            bezeichnung: '',
+            typ: 'H',
+            sachNr: 'E12',
+            auftragsmenge: getAlleAuftraege(12),
+            minutenLinks: Array.from({length: 15}, (_, i) => ([6, 7, 8, 11, 12].includes(i) ? (i === 7 ? 2 : 3) : '')),
+        },
 
-  // Sattel
-  {
-    id: 'sattel_kdh',
-    bezeichnung: t('teil.sattel'),
-    typ: 'KDH',
-    sachNr: 'E17',
-    auftragsmenge: 200,
-    minutenLinks: Array.from({ length: 15 }, (_, i) =>
-      i === 14 ? 3 : ''
-    ),
-  },
+        // Schutzblech vorne
+        {
+            id: 'svk',
+            bezeichnung: t('teil.schutzblech_vorne'),
+            typ: 'K',
+            sachNr: 'E13',
+            auftragsmenge: getAlleAuftraege(13),
+            minutenLinks: Array.from({length: 15}, (_, i) => ([6, 8, 11, 12].includes(i) ? 3 : i === 7 ? 1 : i === 6 ? 2 : '')),
+        },
 
-  // Rahmen (K, D, H)
-  {
-    id: 'rahmen_k',
-    bezeichnung: t('teil.rahmen'),
-    typ: 'K',
-    sachNr: 'E18',
-    auftragsmenge: 200,
-    minutenLinks: Array.from({ length: 15 }, (_, i) =>
-      i === 5 ? 3 : i === 6 ? 2 : i === 7 ? 3 : i === 8 ? 2 : ''
-    ),
-  },
-  {
-    id: 'rahmen_d',
-    bezeichnung: '',
-    typ: 'D',
-    sachNr: 'E19',
-    auftragsmenge: 100,
-    minutenLinks: Array.from({ length: 15 }, (_, i) =>
-      i === 5 ? 3 : i === 6 ? 2 : i === 7 ? 3 : i === 8 ? 2 : ''
-    ),
-  },
-  {
-    id: 'rahmen_h',
-    bezeichnung: '',
-    typ: 'H',
-    sachNr: 'E20',
-    auftragsmenge: 220,
-    minutenLinks: Array.from({ length: 15 }, (_, i) =>
-      i === 5 ? 3 : i === 6 ? 2 : i === 7 ? 3 : i === 8 ? 2 : ''
-    ),
-  },
-  {
-    id: 'pedale-kdh-e26',
-    bezeichnung: t('teil.pedale'),
-    typ: 'KDH',
-    sachNr: 'E26',
-    auftragsmenge: 200,
-    minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 6 ? 2 : i === 14 ? 3 : '')),
-  },
-  {
-    id: 'vorderrad_k-k-e49',
-    bezeichnung: t('teil.vorderrad_cpl'),
-    typ: 'K',
-    sachNr: 'E49',
-    auftragsmenge: 200,
-    minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 0 ? 6 : '')),
-  },
-  {
-    id: 'vorderrad_k-d-e54',
-    bezeichnung: '',
-    typ: 'D',
-    sachNr: 'E54',
-    auftragsmenge: 100,
-    minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 0 ? 6 : '')),
-  },
-  {
-    id: 'vorderrad_k-h-e29',
-    bezeichnung: '',
-    typ: 'H',
-    sachNr: 'E29',
-    auftragsmenge: 220,
-    minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 0 ? 6 : '')),
-  },
-  {
-    id: 'rahm_u_räd-k-e50',
-    bezeichnung: t('teil.rahmen_und_raeder'),
-    typ: 'K',
-    sachNr: 'E50',
-    auftragsmenge: 200,
-    minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 1 ? 5 : '')),
-  },
-  {
-    id: 'rahm_u_räd-d-e55',
-    bezeichnung: '',
-    typ: 'D',
-    sachNr: 'E55',
-    auftragsmenge: 100,
-    minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 1 ? 5 : '')),
-  },
-  {
-    id: 'rahm_u_räd-h-e30',
-    bezeichnung: '',
-    typ: 'H',
-    sachNr: 'E30',
-    auftragsmenge: 220,
-    minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 1 ? 5 : '')),
-  },
-  {
-    id: 'fahrr_o_peda-k-e51',
-    bezeichnung: t('teil.fahrrad_ohne_pedale'),
-    typ: 'K',
-    sachNr: 'E51',
-    auftragsmenge: 200,
-    minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 2 ? 5 : '')),
-  },
-  {
-    id: 'fahrr_o_peda-d-e56',
-    bezeichnung: '',
-    typ: 'D',
-    sachNr: 'E56',
-    auftragsmenge: 100,
-    minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 2 ? 6 : '')),
-  },
-  {
-    id: 'fahrr_o_peda-h-e31',
-    bezeichnung: '',
-    typ: 'H',
-    sachNr: 'E31',
-    auftragsmenge: 220,
-    minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 2 ? 6 : '')),
-  },
-  {
-    id: 'fahrr_komplett-k-p1',
-    bezeichnung: t('teil.fahrrad_komplett'),
-    typ: 'K',
-    sachNr: 'P1',
-    auftragsmenge: 200,
-    minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 3 ? 6 : '')),
-  },
-  {
-    id: 'fahrr_komplett-d-p2',
-    bezeichnung: '',
-    typ: 'D',
-    sachNr: 'P2',
-    auftragsmenge: 100,
-    minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 3 ? 7 : '')),
-  },
-  {
-    id: 'fahrr_komplett-h-p3',
-    bezeichnung: '',
-    typ: 'H',
-    sachNr: 'P3',
-    auftragsmenge: 220,
-    minutenLinks: Array.from({ length: 15 }, (_, i) => (i === 3 ? 7 : '')),
-  },
-  ], [t]);
-  
-  const [ruestzeitGesamt, setRuestzeitGesamt] = useState(Array(15).fill(0));
-  const [rueckstandKapa, setRueckstandKapa] = useState<number[]>(Array(15).fill(0));
-  const [rueckstandRuestzeit, setRueckstandRuestzeit] = useState<number[]>(Array(15).fill(0));
-  const [gesamtKapaBedarf, setGesamtKapaBedarf] = useState<number[]>(Array(15).fill(0));
-  const [initialRuestzeitWurdeGesetzt, setInitialRuestzeitWurdeGesetzt] = useState(false);
+        {
+            id: 'schutzblech_v_d',
+            bezeichnung: '',
+            typ: 'D',
+            sachNr: 'E14',
+            auftragsmenge: getAlleAuftraege(14),
+            minutenLinks: Array.from({length: 15}, (_, i) =>
+                [6, 7].includes(i) ? 2 : i === 8 || i === 11 ? 3 : i === 12 ? 2 : ''
+            ),
+        },
+        {
+            id: 'schutzblech_v_h',
+            bezeichnung: '',
+            typ: 'H',
+            sachNr: 'E15',
+            auftragsmenge: getAlleAuftraege(4),
+            minutenLinks: Array.from({length: 15}, (_, i) =>
+                [6, 7].includes(i) ? 2 : i === 8 || i === 11 ? 3 : i === 12 ? 2 : ''
+            ),
+        },
 
-  
-  console.log('Rückstandkapa: ' + rueckstandKapa);
-  console.log('Rückstandkapa (number[]):', rueckstandKapa);
+        // Lenker
+        {
+            id: 'lenker_kdh',
+            bezeichnung: t('teil.lenker'),
+            typ: 'KDH',
+            sachNr: 'E16',
+            auftragsmenge: getAlleAuftraege(16),
+            minutenLinks: Array.from({length: 15}, (_, i) =>
+                i === 5 ? 2 : i === 13 ? 3 : ''
+            ),
+        },
 
-const [kapaBedarf, setKapaBedarf] = useState<number[]>(Array(15).fill(0));
+        // Sattel
+        {
+            id: 'sattel_kdh',
+            bezeichnung: t('teil.sattel'),
+            typ: 'KDH',
+            sachNr: 'E17',
+            auftragsmenge: getAlleAuftraege(17),
+            minutenLinks: Array.from({length: 15}, (_, i) =>
+                i === 14 ? 3 : ''
+            ),
+        },
 
-useEffect(() => {
-  const neueKapaBedarf = Array.from({ length: 15 }, (_, i) => {
-  const sum = zeilen.reduce((acc, zeile) => {
-    const min = zeile.minutenLinks[i];
-    return acc + (typeof min === 'number' ? min * zeile.auftragsmenge : 0);
-  }, 0);
-  return sum; // immer eine Zahl (auch wenn 0)
-});
+        // Rahmen (K, D, H)
+        {
+            id: 'rahmen_k',
+            bezeichnung: t('teil.rahmen'),
+            typ: 'K',
+            sachNr: 'E18',
+            auftragsmenge: getAlleAuftraege(18),
+            minutenLinks: Array.from({length: 15}, (_, i) =>
+                i === 5 ? 3 : i === 6 ? 2 : i === 7 ? 3 : i === 8 ? 2 : ''
+            ),
+        },
+        {
+            id: 'rahmen_d',
+            bezeichnung: '',
+            typ: 'D',
+            sachNr: 'E19',
+            auftragsmenge: getAlleAuftraege(19),
+            minutenLinks: Array.from({length: 15}, (_, i) =>
+                i === 5 ? 3 : i === 6 ? 2 : i === 7 ? 3 : i === 8 ? 2 : ''
+            ),
+        },
+        {
+            id: 'rahmen_h',
+            bezeichnung: '',
+            typ: 'H',
+            sachNr: 'E20',
+            auftragsmenge: getAlleAuftraege(20),
+            minutenLinks: Array.from({length: 15}, (_, i) =>
+                i === 5 ? 3 : i === 6 ? 2 : i === 7 ? 3 : i === 8 ? 2 : ''
+            ),
+        },
+        {
+            id: 'pedale-kdh-e26',
+            bezeichnung: t('teil.pedale'),
+            typ: 'KDH',
+            sachNr: 'E26',
+            auftragsmenge: getAlleAuftraege(26),
+            minutenLinks: Array.from({length: 15}, (_, i) => (i === 6 ? 2 : i === 14 ? 3 : '')),
+        },
+        {
+            id: 'vorderrad_k-k-e49',
+            bezeichnung: t('teil.vorderrad_cpl'),
+            typ: 'K',
+            sachNr: 'E49',
+            auftragsmenge: getAlleAuftraege(49),
+            minutenLinks: Array.from({length: 15}, (_, i) => (i === 0 ? 6 : '')),
+        },
+        {
+            id: 'vorderrad_k-d-e54',
+            bezeichnung: '',
+            typ: 'D',
+            sachNr: 'E54',
+            auftragsmenge: getAlleAuftraege(54),
+            minutenLinks: Array.from({length: 15}, (_, i) => (i === 0 ? 6 : '')),
+        },
+        {
+            id: 'vorderrad_k-h-e29',
+            bezeichnung: '',
+            typ: 'H',
+            sachNr: 'E29',
+            auftragsmenge: getAlleAuftraege(29),
+            minutenLinks: Array.from({length: 15}, (_, i) => (i === 0 ? 6 : '')),
+        },
+        {
+            id: 'rahm_u_räd-k-e50',
+            bezeichnung: t('teil.rahmen_und_raeder'),
+            typ: 'K',
+            sachNr: 'E50',
+            auftragsmenge: getAlleAuftraege(50),
+            minutenLinks: Array.from({length: 15}, (_, i) => (i === 1 ? 5 : '')),
+        },
+        {
+            id: 'rahm_u_räd-d-e55',
+            bezeichnung: '',
+            typ: 'D',
+            sachNr: 'E55',
+            auftragsmenge: getAlleAuftraege(55),
+            minutenLinks: Array.from({length: 15}, (_, i) => (i === 1 ? 5 : '')),
+        },
+        {
+            id: 'rahm_u_räd-h-e30',
+            bezeichnung: '',
+            typ: 'H',
+            sachNr: 'E30',
+            auftragsmenge: getAlleAuftraege(30),
+            minutenLinks: Array.from({length: 15}, (_, i) => (i === 1 ? 5 : '')),
+        },
+        {
+            id: 'fahrr_o_peda-k-e51',
+            bezeichnung: t('teil.fahrrad_ohne_pedale'),
+            typ: 'K',
+            sachNr: 'E51',
+            auftragsmenge: getAlleAuftraege(51),
+            minutenLinks: Array.from({length: 15}, (_, i) => (i === 2 ? 5 : '')),
+        },
+        {
+            id: 'fahrr_o_peda-d-e56',
+            bezeichnung: '',
+            typ: 'D',
+            sachNr: 'E56',
+            auftragsmenge: getAlleAuftraege(56),
+            minutenLinks: Array.from({length: 15}, (_, i) => (i === 2 ? 6 : '')),
+        },
+        {
+            id: 'fahrr_o_peda-h-e31',
+            bezeichnung: '',
+            typ: 'H',
+            sachNr: 'E31',
+            auftragsmenge: getAlleAuftraege(31),
+            minutenLinks: Array.from({length: 15}, (_, i) => (i === 2 ? 6 : '')),
+        },
+        {
+            id: 'fahrr_komplett-k-p1',
+            bezeichnung: t('teil.fahrrad_komplett'),
+            typ: 'K',
+            sachNr: 'P1',
+            auftragsmenge: getAlleAuftraege(1),
+            minutenLinks: Array.from({length: 15}, (_, i) => (i === 3 ? 6 : '')),
+        },
+        {
+            id: 'fahrr_komplett-d-p2',
+            bezeichnung: '',
+            typ: 'D',
+            sachNr: 'P2',
+            auftragsmenge: getAlleAuftraege(2),
+            minutenLinks: Array.from({length: 15}, (_, i) => (i === 3 ? 7 : '')),
+        },
+        {
+            id: 'fahrr_komplett-h-p3',
+            bezeichnung: '',
+            typ: 'H',
+            sachNr: 'P3',
+            auftragsmenge: getAlleAuftraege(3),
+            minutenLinks: Array.from({length: 15}, (_, i) => (i === 3 ? 7 : '')),
+        },
+    ], [t]);
 
-  setKapaBedarf(neueKapaBedarf);
-}, [zeilen]);
+    const [ruestzeitGesamt, setRuestzeitGesamt] = useState(Array(15).fill(0));
+    const [rueckstandKapa, setRueckstandKapa] = useState<number[]>(Array(15).fill(0));
+    const [rueckstandRuestzeit, setRueckstandRuestzeit] = useState<number[]>(Array(15).fill(0));
+    const [gesamtKapaBedarf, setGesamtKapaBedarf] = useState<number[]>(Array(15).fill(0));
+    const [initialRuestzeitWurdeGesetzt, setInitialRuestzeitWurdeGesetzt] = useState(false);
 
-useEffect(() => {
-  if (!initialRuestzeitWurdeGesetzt && alleWaitingListEintraegeMitRuestzeit) {
-    const arbeitsplatzRuestzeiten = Array(15).fill(0);
-    alleWaitingListEintraegeMitRuestzeit.forEach(entry => {
-      const arbeitsplatzIndex = entry.arbeitsplatzId - 1;
-      if (arbeitsplatzIndex >= 0 && arbeitsplatzIndex < 15) {
-        arbeitsplatzRuestzeiten[arbeitsplatzIndex] += entry.zeit;
-      }
-    });
-
-    setRueckstandRuestzeit(arbeitsplatzRuestzeiten);
-    setInitialRuestzeitWurdeGesetzt(true); 
-  }
-}, [alleWaitingListEintraegeMitRuestzeit, initialRuestzeitWurdeGesetzt]);
-
-
-  useEffect(() => {
-
-  console.log('Berechne gesamtKapaBedarf mit:');
-  console.log('kapaBedarf', kapaBedarf);
-  console.log('ruestzeitGesamt', ruestzeitGesamt);
-  console.log('rueckstandKapa', rueckstandKapa);
-  console.log('rueckstandRuestzeit', rueckstandRuestzeit);
-
-  const gesamt = Array.from({ length: 15 }, (_, i) => {
-    const kapa = typeof kapaBedarf[i] === 'number' ? kapaBedarf[i] as number : 0;
-    const ruest = typeof ruestzeitGesamt[i] === 'number' ? ruestzeitGesamt[i] : 0;
-    const ruecksKapa = typeof rueckstandKapa[i] === 'number' ? rueckstandKapa[i] : 0;
-    const ruecksRuest = typeof rueckstandRuestzeit[i] === 'number' ? rueckstandRuestzeit[i] : 0;
 
     console.log('Rückstandkapa: ' + rueckstandKapa);
-    console.log('Rückkapa: ' + ruecksKapa);
-    return kapa + ruest + ruecksKapa + ruecksRuest;
-  });
+    console.log('Rückstandkapa (number[]):', rueckstandKapa);
 
-  setGesamtKapaBedarf(gesamt);
-}, [kapaBedarf, ruestzeitGesamt, rueckstandKapa, rueckstandRuestzeit]);
+    const [kapaBedarf, setKapaBedarf] = useState<number[]>(Array(15).fill(0));
 
-const ruestzeitEinfach = [
-    60, 80, 60, 80, 0, 60, 210, 155, 140, 120, 80, 0, 0, 0, 30
-  ];
+    useEffect(() => {
+        const neueKapaBedarf = Array.from({length: 15}, (_, i) => {
+            const sum = zeilen.reduce((acc, zeile) => {
+                const min = zeile.minutenLinks[i];
+                return acc + (typeof min === 'number' ? min * zeile.auftragsmenge : 0);
+            }, 0);
+            return sum; // immer eine Zahl (auch wenn 0)
+        });
 
-  const handleRuestzeitChange = (index: number, value: string) => {
-    const neueWerte = [...ruestzeitGesamt];
-    neueWerte[index] = parseFloat(value) || 0;
-    setRuestzeitGesamt(neueWerte);
-  };
+        setKapaBedarf(neueKapaBedarf);
+    }, [zeilen]);
 
-  const diffMaxArbeitszeit: (number | '')[] = Array.from({ length: 15 }, (_, i) => {
-    const gesamt = gesamtKapaBedarf[i];
-    return typeof gesamt === 'number' ? gesamt - 2400 : '';
-  });
+    useEffect(() => {
+        if (!initialRuestzeitWurdeGesetzt && alleWaitingListEintraegeMitRuestzeit) {
+            const arbeitsplatzRuestzeiten = Array(15).fill(0);
+            alleWaitingListEintraegeMitRuestzeit.forEach(entry => {
+                const arbeitsplatzIndex = entry.arbeitsplatzId - 1;
+                if (arbeitsplatzIndex >= 0 && arbeitsplatzIndex < 15) {
+                    arbeitsplatzRuestzeiten[arbeitsplatzIndex] += entry.zeit;
+                }
+            });
 
-  //Das (schichtUndÜberstund) ist auch ein Schleifencode wie bei diffMaxArbeitszeit. Nur ist er einfacher und verständlicher geschrieben.
+            setRueckstandRuestzeit(arbeitsplatzRuestzeiten);
+            setInitialRuestzeitWurdeGesetzt(true);
+        }
+    }, [alleWaitingListEintraegeMitRuestzeit, initialRuestzeitWurdeGesetzt]);
 
-  // Neues Array mit 15 Spalten erstellen
-const schichtUndÜberstund: (number | '')[] = [];
+
+    useEffect(() => {
+
+        console.log('Berechne gesamtKapaBedarf mit:');
+        console.log('kapaBedarf', kapaBedarf);
+        console.log('ruestzeitGesamt', ruestzeitGesamt);
+        console.log('rueckstandKapa', rueckstandKapa);
+        console.log('rueckstandRuestzeit', rueckstandRuestzeit);
+
+        const gesamt = Array.from({length: 15}, (_, i) => {
+            const kapa = typeof kapaBedarf[i] === 'number' ? kapaBedarf[i] as number : 0;
+            const ruest = typeof ruestzeitGesamt[i] === 'number' ? ruestzeitGesamt[i] : 0;
+            const ruecksKapa = typeof rueckstandKapa[i] === 'number' ? rueckstandKapa[i] : 0;
+            const ruecksRuest = typeof rueckstandRuestzeit[i] === 'number' ? rueckstandRuestzeit[i] : 0;
+
+            console.log('Rückstandkapa: ' + rueckstandKapa);
+            console.log('Rückkapa: ' + ruecksKapa);
+            return kapa + ruest + ruecksKapa + ruecksRuest;
+        });
+
+        setGesamtKapaBedarf(gesamt);
+    }, [kapaBedarf, ruestzeitGesamt, rueckstandKapa, rueckstandRuestzeit]);
+
+    const ruestzeitEinfach = [
+        60, 80, 60, 80, 0, 60, 210, 155, 140, 120, 80, 0, 0, 0, 30
+    ];
+
+    const handleRuestzeitChange = (index: number, value: string) => {
+        const neueWerte = [...ruestzeitGesamt];
+        neueWerte[index] = parseFloat(value) || 0;
+        setRuestzeitGesamt(neueWerte);
+    };
+
+    const diffMaxArbeitszeit: (number | '')[] = Array.from({length: 15}, (_, i) => {
+        const gesamt = gesamtKapaBedarf[i];
+        return typeof gesamt === 'number' ? gesamt - 2400 : '';
+    });
+
+    //Das (schichtUndÜberstund) ist auch ein Schleifencode wie bei diffMaxArbeitszeit. Nur ist er einfacher und verständlicher geschrieben.
+
+    // Neues Array mit 15 Spalten erstellen
+    const schichtUndÜberstund: (number | '')[] = [];
 
 // Schleife über alle 15 Spalten (Arbeitsplätze)
-for (let i = 0; i < 15; i++) {
-  // Wert aus diffMaxArbeitszeit an der aktuellen Position holen
-  const differenzZurMaxZeit = diffMaxArbeitszeit[i];
+    for (let i = 0; i < 15; i++) {
+        // Wert aus diffMaxArbeitszeit an der aktuellen Position holen
+        const differenzZurMaxZeit = diffMaxArbeitszeit[i];
 
-  // Prüfen, ob es sich um eine gültige Zahl handelt
-  if (typeof differenzZurMaxZeit === 'number') {
-    // Wenn ja: Durch 5 teilen, um den durchschnittlichen täglichen Bedarf zu berechnen
-    const durchschnittProTag = differenzZurMaxZeit / 5;
+        // Prüfen, ob es sich um eine gültige Zahl handelt
+        if (typeof differenzZurMaxZeit === 'number') {
+            // Wenn ja: Durch 5 teilen, um den durchschnittlichen täglichen Bedarf zu berechnen
+            const durchschnittProTag = differenzZurMaxZeit / 5;
 
-    // Ergebnis im Array speichern
-    schichtUndÜberstund.push(durchschnittProTag);
-  } else {
-    // Wenn kein gültiger Zahlenwert vorliegt, leeren String speichern
-    schichtUndÜberstund.push('');
-  }
-}
+            // Ergebnis im Array speichern
+            schichtUndÜberstund.push(durchschnittProTag);
+        } else {
+            // Wenn kein gültiger Zahlenwert vorliegt, leeren String speichern
+            schichtUndÜberstund.push('');
+        }
+    }
 
-const initialUeberstunde = Array.from({ length: 15 }, (_, i) => 0);
-const [benoetigteUeberstunden, setBenoetigteUeberstunden] = useState<(number | '')[]>(initialUeberstunde);
-
-
-const handleUeberstundenChange = (index: number, value: string) => {
-  const updated = [...benoetigteUeberstunden];
-  const num = Number(value);
-  updated[index] = isNaN(num) ? '' : num;
-  setBenoetigteUeberstunden(updated);
-};
-
-const initialZusatzschichten = Array.from({ length: 15 }, (_, i) => (i === 4 ? 0 : 1));
-const [benoetigteZusatzschichten, setBenoetigteZusatzschichten] = useState<(number | '')[]>(initialZusatzschichten);
-
-const handleZusatzschichtenChange = (index: number, value: string)=> {
-  const updated = [...benoetigteZusatzschichten];
-  const num = Number(value);
-  updated[index] = isNaN(num) ? '' : num;
-  setBenoetigteZusatzschichten(updated);
-};
-
-  return (
-    // <div className="container mt-4">
-      <div className="container-fluid mt-4">
-      <h1>{t('Minutenplanung')}</h1>
-      <div className="mb-3">
-        <LinkContainer to="/">
-          <Button className="me-2">{t('Startseite')}</Button>
-        </LinkContainer>
-        <LinkContainer to="/Produktionsplanung">
-          <Button>{t('Produktionsplanung')}</Button>
-        </LinkContainer>
-      </div>
-
-      <Table striped bordered hover className="minuten-tabelle">
-
-      <thead>
-        <tr>
-          <th>{t('Bezeichnung')}</th>
-          <th>{t('Typ')}</th>
-          <th>{t('TeilNr.')}Nr</th>
-          <th>{t('Auftragsmenge')}</th>
-          {Array.from({ length: 15 }).map((_, i) => (
-            <th colSpan={2} key={i}>{`${t('Platz')} ${i + 1}`}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-  {zeilen.map((zeile) => (
-    <tr key={zeile.id}>
-      <td>{zeile.bezeichnung}</td>
-      <td>{zeile.typ}</td>
-      <td>{zeile.sachNr}</td>
-      <td>{zeile.auftragsmenge}</td>
-      {zeile.minutenLinks.map((min, i) => (
-        <React.Fragment key={i}>
-          <td className="text-center">
-            {min !== '' ? min : ''}
-          </td>
-          <td className="text-center">
-            {min !== '' ? min * zeile.auftragsmenge : ''}
-          </td>
-        </React.Fragment>
-      ))}
-    </tr>
-  ))}
-        <tr id="kapabedarf_neu" className="label-fett">
-  <td colSpan={4} className="align-middle text-center">{t('Kapazitätsbedarf (neu)')}</td>
-  {kapaBedarf.map((wert, i) => (
-    <td colSpan={2} key={i} className="text-center">
-      {wert}
-    </td>
-  ))}
-</tr>
-
-<tr id="rüstzeit_neu" 
-// className="label-fett"
->
-  <td colSpan={4}>{t('Einfache Rüstzeit / Rüstzeit gesamt (neu)')}</td>
-  
-        {ruestzeitEinfach.map((einfach, i) => (
-          <React.Fragment key={i}>
-            <td className="text-center">
-              {einfach}
-            </td>
-            <td className="text-center">
-              <input
-                type="number"
-                value={ruestzeitGesamt[i]}
-                onChange={(e) => handleRuestzeitChange(i, e.target.value)}
-                disabled={i === 4}
-                readOnly={i === 4}
-                style={{
-                  textAlign: 'center',
-                  border: '1px solid #ccc',
-                  width: '60px'
-                }}
-              />
-            </td>
-          </React.Fragment>
-        ))}
-</tr>
+    const initialUeberstunde = Array.from({length: 15}, () => 0);
+    const [benoetigteUeberstunden, setBenoetigteUeberstunden] = useState<(number | '')[]>(initialUeberstunde);
 
 
+    const handleUeberstundenChange = (index: number, value: string) => {
+        const updated = [...benoetigteUeberstunden];
+        const num = Number(value);
+        updated[index] = isNaN(num) ? '' : num;
+        setBenoetigteUeberstunden(updated);
+    };
 
-<tr id="rückstandKapaBedarf_neu" 
-// className="label-fett"
->
-  <td colSpan={4} className="align-middle text-center">{t('Kap.bed. (Rückstand Vorperiode)')}</td>
-  {rueckstandKapa.map((value, i) => (
-        <td colSpan={2} key={i}>{value}</td>
-      ))}
-</tr>
+    const initialZusatzschichten = Array.from({length: 15}, (_, i) => (i === 4 ? 0 : 1));
+    const [benoetigteZusatzschichten, setBenoetigteZusatzschichten] = useState<(number | '')[]>(initialZusatzschichten);
 
-<tr id="rückstand_rüstzeit">
-  <td colSpan={4} className="align-middle text-center">{t('Rüstzeit (Rückstand Vorperiode)')}</td>
-  {rueckstandRuestzeit.map((wert, i) => (
-    <td colSpan={2} key={i} className="text-center">
-      <input
-        type="number"
-        value={wert}
-        onChange={(e) => {
-          const updatedRuestzeiten = [...rueckstandRuestzeit];
-          updatedRuestzeiten[i] = parseFloat(e.target.value) || 0;
-          setRueckstandRuestzeit(updatedRuestzeiten);
-        }}
-        style={{
-          width: '60px',
-          textAlign: 'center',
-          border: '1px solid #ccc',
-          backgroundColor: 'white',
-        }}
-      />
-    </td>
-  ))}
-</tr>
+    const handleZusatzschichtenChange = (index: number, value: string) => {
+        const updated = [...benoetigteZusatzschichten];
+        const num = Number(value);
+        updated[index] = isNaN(num) ? '' : num;
+        setBenoetigteZusatzschichten(updated);
+    };
 
-{/* <tr id="gesamt_kapabedarf" style={{ fontWeight: 'bold', backgroundColor: '#f0f0f0' }} className="label-fett">
+    return (
+        // <div className="container mt-4">
+        <div className="container-fluid mt-4">
+            <h1>{t('Minutenplanung')}</h1>
+            <div className="mb-3">
+                <LinkContainer to="/">
+                    <Button className="me-2">{t('Startseite')}</Button>
+                </LinkContainer>
+                <LinkContainer to="/Produktionsplanung">
+                    <Button>{t('Produktionsplanung')}</Button>
+                </LinkContainer>
+            </div>
+
+            <Table striped bordered hover className="minuten-tabelle">
+
+                <thead>
+                <tr>
+                    <th>{t('Bezeichnung')}</th>
+                    <th>{t('Typ')}</th>
+                    <th>{t('TeilNr.')}Nr</th>
+                    <th>{t('Auftragsmenge')}</th>
+                    {Array.from({length: 15}).map((_, i) => (
+                        <th colSpan={2} key={i}>{`${t('Platz')} ${i + 1}`}</th>
+                    ))}
+                </tr>
+                </thead>
+                <tbody>
+                {zeilen.map((zeile) => (
+                    <tr key={zeile.id}>
+                        <td>{zeile.bezeichnung}</td>
+                        <td>{zeile.typ}</td>
+                        <td>{zeile.sachNr}</td>
+                        <td>{zeile.auftragsmenge}</td>
+                        {zeile.minutenLinks.map((min, i) => (
+                            <React.Fragment key={i}>
+                                <td className="text-center">
+                                    {min !== '' ? min : ''}
+                                </td>
+                                <td className="text-center">
+                                    {min !== '' ? min * zeile.auftragsmenge : ''}
+                                </td>
+                            </React.Fragment>
+                        ))}
+                    </tr>
+                ))}
+                <tr id="kapabedarf_neu" className="label-fett">
+                    <td colSpan={4} className="align-middle text-center">{t('Kapazitätsbedarf (neu)')}</td>
+                    {kapaBedarf.map((wert, i) => (
+                        <td colSpan={2} key={i} className="text-center">
+                            {wert}
+                        </td>
+                    ))}
+                </tr>
+
+                <tr id="rüstzeit_neu"
+                    // className="label-fett"
+                >
+                    <td colSpan={4}>{t('Einfache Rüstzeit / Rüstzeit gesamt (neu)')}</td>
+
+                    {ruestzeitEinfach.map((einfach, i) => (
+                        <React.Fragment key={i}>
+                            <td className="text-center">
+                                {einfach}
+                            </td>
+                            <td className="text-center">
+                                <input
+                                    type="number"
+                                    value={ruestzeitGesamt[i]}
+                                    onChange={(e) => {
+                                        // removes leading 0
+                                        // @ts-ignore
+                                        e.target.value = Math.abs(e.target.value);
+                                        handleRuestzeitChange(i, e.target.value)
+                                    }}
+                                    disabled={i === 4}
+                                    readOnly={i === 4}
+                                    style={{
+                                        textAlign: 'center',
+                                        border: '1px solid #ccc',
+                                        width: '60px'
+                                    }}
+                                />
+                            </td>
+                        </React.Fragment>
+                    ))}
+                </tr>
+
+
+                <tr id="rückstandKapaBedarf_neu"
+                    // className="label-fett"
+                >
+                    <td colSpan={4} className="align-middle text-center">{t('Kap.bed. (Rückstand Vorperiode)')}</td>
+                    {rueckstandKapa.map((value, i) => (
+                        <td colSpan={2} key={i}>{value}</td>
+                    ))}
+                </tr>
+
+                <tr id="rückstand_rüstzeit">
+                    <td colSpan={4} className="align-middle text-center">{t('Rüstzeit (Rückstand Vorperiode)')}</td>
+                    {rueckstandRuestzeit.map((wert, i) => (
+                        <td colSpan={2} key={i} className="text-center">
+                            <input
+                                type="number"
+                                value={wert}
+                                onChange={(e) => {
+                                    // removes leading 0
+                                    // @ts-ignore
+                                    e.target.value = Math.abs(e.target.value);
+                                    const updatedRuestzeiten = [...rueckstandRuestzeit];
+                                    updatedRuestzeiten[i] = parseFloat(e.target.value) || 0;
+                                    setRueckstandRuestzeit(updatedRuestzeiten);
+                                }}
+                                style={{
+                                    width: '60px',
+                                    textAlign: 'center',
+                                    border: '1px solid #ccc',
+                                    backgroundColor: 'white',
+                                }}
+                            />
+                        </td>
+                    ))}
+                </tr>
+
+                {/* <tr id="gesamt_kapabedarf" style={{ fontWeight: 'bold', backgroundColor: '#f0f0f0' }} className="label-fett">
   <td colSpan={4} className="align-middle text-center">Gesamt-Kapazitätsbedarf</td>
   {gesamtKapaBedarf.map((wert, i) => (
     <td colSpan={2} key={i} style={{ textAlign: 'center' }} className="text-center">
@@ -638,167 +646,179 @@ const handleZusatzschichtenChange = (index: number, value: string)=> {
   ))}
 </tr> */}
 
-<tr className="fw-bold bg-light">
-  <td colSpan={4}>{t('Gesamt Kapazitätsbedarf')}</td>
-  {gesamtKapaBedarf.map((val, i) => (
-    <React.Fragment key={i}>
-            <td colSpan={2} className="text-center">{val}</td>
-    </React.Fragment>
-  ))}
-</tr>
+                <tr className="fw-bold bg-light">
+                    <td colSpan={4}>{t('Gesamt Kapazitätsbedarf')}</td>
+                    {gesamtKapaBedarf.map((val, i) => (
+                        <React.Fragment key={i}>
+                            <td colSpan={2} className="text-center">{val}</td>
+                        </React.Fragment>
+                    ))}
+                </tr>
 
-<tr id="diff_max_wochenarbeitszeit" className="label-fett">
-  <td colSpan={4} className="align-middle text-center">{t('Differenz zu max. Wochenarbeitszeit')}</td>
-  {diffMaxArbeitszeit.map((wert, i) => {
-    let cellClass = "text-center";
-    if (typeof wert === 'number') {
-      cellClass += wert < 0 ? " bg-success text-white" : " bg-danger text-white";
-    }
+                <tr id="diff_max_wochenarbeitszeit" className="label-fett">
+                    <td colSpan={4} className="align-middle text-center">{t('Differenz zu max. Wochenarbeitszeit')}</td>
+                    {diffMaxArbeitszeit.map((wert, i) => {
+                        let cellClass = "text-center";
+                        if (typeof wert === 'number') {
+                            cellClass += wert < 0 ? " bg-success text-white" : " bg-danger text-white";
+                        }
 
-    return (
-      <td colSpan={2} key={i} className={cellClass}>
-        {wert}
-      </td>
-    );
-  })}
-  </tr>
+                        return (
+                            <td colSpan={2} key={i} className={cellClass}>
+                                {wert}
+                            </td>
+                        );
+                    })}
+                </tr>
 
-  <tr id="schicht_u_überst" className="label-fett">
-  <td colSpan={4} className="align-middle text-center">{t('Schichten und Überstunden / Überzeit pro Tag')}</td>
-  {schichtUndÜberstund.map((wert, i) => {
-    // Klasse basierend auf dem Wert bestimmen
-    let cellClass = "text-center";
-    if (typeof wert === 'number') {
-      cellClass += wert < 0 ? " bg-success text-white" : " bg-danger text-white";
-    }
+                <tr id="schicht_u_überst" className="label-fett">
+                    <td colSpan={4}
+                        className="align-middle text-center">{t('Schichten und Überstunden / Überzeit pro Tag')}</td>
+                    {schichtUndÜberstund.map((wert, i) => {
+                        // Klasse basierend auf dem Wert bestimmen
+                        let cellClass = "text-center";
+                        if (typeof wert === 'number') {
+                            cellClass += wert < 0 ? " bg-success text-white" : " bg-danger text-white";
+                        }
 
-    return (
-      <td colSpan={2} key={i} className={cellClass}>
-        {wert}
-      </td>
-    );
-  })}
-  </tr>
-  {/* Abstand von 1cm per Leerzeile simulieren */}
-  <tr>
-  <td colSpan={34} style={{ height: '1cm', background: 'transparent', border: 'none' }} />
-  </tr>
+                        return (
+                            <td colSpan={2} key={i} className={cellClass}>
+                                {wert}
+                            </td>
+                        );
+                    })}
+                </tr>
+                {/* Abstand von 1cm per Leerzeile simulieren */}
+                <tr>
+                    <td colSpan={34} style={{height: '1cm', background: 'transparent', border: 'none'}}/>
+                </tr>
 
-  <tr id="benötigte_überstunden" className="label-fett">
-  <td colSpan={4} className="text-center">{t('Benötigte Überstunden / pro Tag')}</td>
+                <tr id="benötigte_überstunden" className="label-fett">
+                    <td colSpan={4} className="text-center">{t('Benötigte Überstunden / pro Tag')}</td>
 
-  {benoetigteUeberstunden.map((wert, i) => {
-    const num = Number(wert);
-    const isCritical = num > 240 || num < 0;
+                    {benoetigteUeberstunden.map((wert, i) => {
+                        const num = Number(wert);
+                        const isCritical = num > 240 || num < 0;
 
-    return (
-      <td colSpan={2} key={i} className="text-center">
-        <input
-          type="number"
-          value={wert}
-          onChange={(e) => handleUeberstundenChange(i, e.target.value)}
-          disabled={i === 4}
-          readOnly={i === 4}
-          style={{
-            width: '100%',
-            textAlign: 'center',
-            border: '1px solid #ccc',
-            backgroundColor: i === 4 ? '#f0f0f0' : 'white',
-            color: i === 4 ? 'gray' : isCritical ? 'red' : 'inherit',
-            fontWeight: isCritical ? 'bold' : 'normal',
-          }}
-        />
-      </td>
-    );
-  })}
-  </tr>
+                        return (
+                            <td colSpan={2} key={i} className="text-center">
+                                <input
+                                    type="number"
+                                    value={wert}
+                                    onChange={(e) => {
+                                        // removes leading 0
+                                        // @ts-ignore
+                                        e.target.value = Math.abs(e.target.value);
+                                        handleUeberstundenChange(i, e.target.value)
+                                    }}
+                                    disabled={i === 4}
+                                    readOnly={i === 4}
+                                    style={{
+                                        width: '100%',
+                                        textAlign: 'center',
+                                        border: '1px solid #ccc',
+                                        backgroundColor: i === 4 ? '#f0f0f0' : 'white',
+                                        color: i === 4 ? 'gray' : isCritical ? 'red' : 'inherit',
+                                        fontWeight: isCritical ? 'bold' : 'normal',
+                                    }}
+                                />
+                            </td>
+                        );
+                    })}
+                </tr>
 
-  <tr id="benötigte_zusatzschichten" className="label-fett">
-  <td colSpan={4} className="text-center">{t('Benötigte Zusatzschichten')}</td>
+                <tr id="benötigte_zusatzschichten" className="label-fett">
+                    <td colSpan={4} className="text-center">{t('Benötigte Zusatzschichten')}</td>
 
-  {benoetigteZusatzschichten.map((wert, i) => { 
-      const num = Number(wert);
-      let isCritical = Boolean(false);
-      if (num > 3 || num < 1) {
-        isCritical = true;
-      };
+                    {benoetigteZusatzschichten.map((wert, i) => {
+                        const num = Number(wert);
+                        let isCritical = Boolean(false);
+                        if (num > 3 || num < 1) {
+                            isCritical = true;
+                        }
+                        ;
 
-  return (
-    <td colSpan={2} key={i} className="text-center">
-      <input
-        type="number"
-        value={wert}
-        onChange={(e) => handleZusatzschichtenChange(i, e.target.value)}
-        disabled={i === 4}
-        readOnly={i === 4}
-        style={{
-          width: '100%',
-          textAlign: 'center',
-          border: '1px solid #ccc',
-          backgroundColor: i === 4 ? '#f0f0f0' : 'white',
-          color: i === 4 ? 'gray' : isCritical ? 'red' : 'inherit',
-          fontWeight: isCritical ? 'bold' : 'normal',
-        }}
-      />
-    </td>
-  );
-  })}
-  </tr>
-  <tr>
-  <td colSpan={34} style={{ height: '1cm', background: 'transparent', border: 'none' }} />
-  </tr>
-  <tr>
-  <td colSpan={34}>
-    <h4 className="mt-4">{t('Warteliste je Arbeitsplatz (timeNeed je Teil)')}</h4>
-    <Table 
-    // bordered size="sm" 
-    striped bordered hover className="table-waitinglist">
-      <thead>
-        <tr>
-          <th>{t('Arbeitsplatz')}</th>
-          <th>{t('Teil-Nr.')}</th>
-          <th>{t('Periode')}</th>
-          <th>{t('Auftrag')}</th>
-          <th>{t('Batch')}</th>
-          <th>{t('Menge')}</th>
-          <th>{t('timeNeed')}</th>
-          <th>{t('Rüstzeit')}</th>
-        </tr>
-      </thead>
-      <tbody>
-  {alleWaitingListEintraegeMitRuestzeit?.map((entry, index) => (
-    <tr key={index}>
-      <td className="text-center">{entry.arbeitsplatzId}</td>
-      <td className="text-center">{entry.item}</td>
-      <td className="text-center">{entry.period}</td>
-      <td className="text-center">{entry.order}</td>
-      <td className="text-center">
-        {entry.firstbatch} - {entry.lastbatch}
-      </td>
-      <td className="text-center">{entry.amount}</td>
-      <td className="text-center">{entry.timeNeed}</td>
-      <td className="text-center">{entry.zeit}</td>
-    </tr>
-  ))}
-</tbody>
-    </Table>
-  </td>
-</tr>
+                        return (
+                            <td colSpan={2} key={i} className="text-center">
+                                <input
+                                    type="number"
+                                    value={wert}
+                                    onChange={(e) => {
+                                        // removes leading 0
+                                        // @ts-ignore
+                                        e.target.value = Math.abs(e.target.value);
+                                        handleZusatzschichtenChange(i, e.target.value);
+                                    }}
+                                    disabled={i === 4}
+                                    readOnly={i === 4}
+                                    style={{
+                                        width: '100%',
+                                        textAlign: 'center',
+                                        border: '1px solid #ccc',
+                                        backgroundColor: i === 4 ? '#f0f0f0' : 'white',
+                                        color: i === 4 ? 'gray' : isCritical ? 'red' : 'inherit',
+                                        fontWeight: isCritical ? 'bold' : 'normal',
+                                    }}
+                                />
+                            </td>
+                        );
+                    })}
+                </tr>
+                <tr>
+                    <td colSpan={34} style={{height: '1cm', background: 'transparent', border: 'none'}}/>
+                </tr>
+                <tr>
+                    <td colSpan={34}>
+                        <h4 className="mt-4">{t('Warteliste je Arbeitsplatz (timeNeed je Teil)')}</h4>
+                        <Table
+                            // bordered size="sm"
+                            striped bordered hover className="table-waitinglist">
+                            <thead>
+                            <tr>
+                                <th>{t('Arbeitsplatz')}</th>
+                                <th>{t('Teil-Nr.')}</th>
+                                <th>{t('Periode')}</th>
+                                <th>{t('Auftrag')}</th>
+                                <th>{t('Batch')}</th>
+                                <th>{t('Menge')}</th>
+                                <th>{t('timeNeed')}</th>
+                                <th>{t('Rüstzeit')}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {alleWaitingListEintraegeMitRuestzeit?.map((entry, index) => (
+                                <tr key={index}>
+                                    <td className="text-center">{entry.arbeitsplatzId}</td>
+                                    <td className="text-center">{entry.item}</td>
+                                    <td className="text-center">{entry.period}</td>
+                                    <td className="text-center">{entry.order}</td>
+                                    <td className="text-center">
+                                        {entry.firstbatch} - {entry.lastbatch}
+                                    </td>
+                                    <td className="text-center">{entry.amount}</td>
+                                    <td className="text-center">{entry.timeNeed}</td>
+                                    <td className="text-center">{entry.zeit}</td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </Table>
+                    </td>
+                </tr>
 
-  </tbody>
-    </Table>
-<div>
-</div>
+                </tbody>
+            </Table>
+            <div>
+            </div>
 
-    <Button className="Button"
+            <Button className="Button"
                     onClick={save}
             >
                 {t('Arbeitszeitplan speichern')}
             </Button>
 
             <tr>
-  <td colSpan={34} style={{ height: '1cm', background: 'transparent', border: 'none' }} />
-  </tr>
+                <td colSpan={34} style={{height: '1cm', background: 'transparent', border: 'none'}}/>
+            </tr>
         </div>
-  );
+    );
 };
