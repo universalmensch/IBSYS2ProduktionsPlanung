@@ -287,11 +287,43 @@ export function TeileProduktion() {
             163, 173
         ];
 
+        const allowedDecimalPlaces = [161, 162, 163, 171, 172, 173, 261, 262, 263];
+
+        function removeDecimalPlaces(id: number, menge: number) {
+            const rest = menge % 1;
+
+            if (rest === 0) return menge;
+
+            switch (id) {
+                case 161:
+                case 171:
+                case 261:
+                    return Math.ceil(menge);
+                case 162:
+                case 172:
+                case 262:
+                    return rest >= 0.66 ? Math.ceil(menge) : Math.floor(menge);
+                case 163:
+                case 173:
+                case 263:
+                    return Math.floor(menge);
+                default:
+                    return menge;
+            }
+        }
+
         const production = produktionsteile
             .filter(auftrag => auftrag.menge > 0 && ![16, 17, 26].includes(auftrag.id))
             .sort((a, b) => preferedOrder.indexOf(a.id) - preferedOrder.indexOf(b.id))
-            .map(auftrag =>
-                new ProduktionsAuftragDTO(getOriginalId(auftrag.id), auftrag.menge)
+            .map(auftrag => {
+                    let menge = auftrag.menge;
+
+                    if (allowedDecimalPlaces.includes(auftrag.id)) {
+                        menge = removeDecimalPlaces(auftrag.id, menge);
+                    }
+
+                    return new ProduktionsAuftragDTO(getOriginalId(auftrag.id), menge)
+                }
             )
 
 
