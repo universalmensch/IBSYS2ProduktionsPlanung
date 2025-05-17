@@ -1,6 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Button, Table} from 'react-bootstrap';
-import {LinkContainer} from 'react-router-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/minutenplanung.css'
 import {useGeneralStore} from '../helper/GeneralStoreContext';
@@ -78,6 +77,7 @@ export const MinutenPlanung = () => {
         setRueckstandKapa(rueckstandArray);
     }, [wartelistenArbeitsplatz]);
 
+    const [speicherInfo, setSpeicherInfo] = useState(false);
 
 //Import der Wartelisten mit den einzelnen wartenden Teilen, für die Rüstrückstandszeit
 
@@ -111,6 +111,9 @@ export const MinutenPlanung = () => {
         });
 
         console.log("Gespeicherte Arbeitszeiten für XML:", workingTimes);
+
+        setSpeicherInfo(true);
+        setTimeout(() => setSpeicherInfo(false), 3000);
     }
 
     const getAlleAuftraege = (articleId: number) =>
@@ -518,15 +521,8 @@ export const MinutenPlanung = () => {
         // <div className="container mt-4">
         <div className="container-fluid mt-4">
             <h1>{t('Minutenplanung')}</h1>
-            <div className="mb-3">
-                <LinkContainer to="/">
-                    <Button className="me-2">{t('Startseite')}</Button>
-                </LinkContainer>
-                <LinkContainer to="/Produktionsplanung">
-                    <Button>{t('Produktionsplanung')}</Button>
-                </LinkContainer>
-            </div>
 
+            <br/>
             <Table striped bordered hover className="minuten-tabelle">
 
                 <thead>
@@ -807,18 +803,20 @@ export const MinutenPlanung = () => {
 
                 </tbody>
             </Table>
-            <div>
-            </div>
 
+            <br/>
+            {speicherInfo && (
+                <div className="text-center mt-3">
+                    <div className="alert alert-primary" role="alert">
+                        Arbeitszeiten erfolgreich gespeichert.
+                    </div>
+                </div>
+            )}
             <Button className="Button"
                     onClick={save}
             >
-                {t('Arbeitszeitplan speichern')}
+                {t('Speichern')}
             </Button>
-
-            <tr>
-                <td colSpan={34} style={{height: '1cm', background: 'transparent', border: 'none'}}/>
-            </tr>
         </div>
     );
 };

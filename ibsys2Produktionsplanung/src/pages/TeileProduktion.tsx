@@ -4,8 +4,10 @@ import {ProduktionsPlanDTO} from "../dtos/ProduktionsPlanDTO.tsx";
 import {useState} from "react";
 import {AnzeigeReihenfolge, Produktionsteil, Produktionsteile, SpaceAfterRow} from "../dtos/Produktionsteile.tsx";
 import {ProduktionsAuftragDTO} from "../dtos/ProduktionsAuftragDTO.tsx";
+import {useTranslation} from "react-i18next";
 
 export function TeileProduktion() {
+    const {t} = useTranslation();
     const {generalStore, setGeneralStoreData} = useGeneralStore()
 
     const input = generalStore?.input?.results
@@ -15,9 +17,10 @@ export function TeileProduktion() {
     const inBearbeitung = input?.ordersinwork?.workplace
     const verkaufsauftraege = input?.forecast || {p1: 0, p2: 0, p3: 0}
 
-    const produktionsPlan = generalStore?.produktionsPlan ?? new ProduktionsPlanDTO(0, 0, 0);
+    const produktionsPlan = generalStore?.produktionsPlan ?? new ProduktionsPlanDTO();
 
     const [produktionsteile, setProduktionsteile] = useState<Produktionsteil[]>(initializeProduktionsteile());
+    const [speicherInfo, setSpeicherInfo] = useState(false);
 
     function initializeProduktionsteile() {
         const result: Produktionsteil[] = [];
@@ -284,11 +287,43 @@ export function TeileProduktion() {
             163, 173
         ];
 
+        const allowedDecimalPlaces = [161, 162, 163, 171, 172, 173, 261, 262, 263];
+
+        function removeDecimalPlaces(id: number, menge: number) {
+            const rest = menge % 1;
+
+            if (rest === 0) return menge;
+
+            switch (id) {
+                case 161:
+                case 171:
+                case 261:
+                    return Math.ceil(menge);
+                case 162:
+                case 172:
+                case 262:
+                    return rest >= 0.66 ? Math.ceil(menge) : Math.floor(menge);
+                case 163:
+                case 173:
+                case 263:
+                    return Math.floor(menge);
+                default:
+                    return menge;
+            }
+        }
+
         const production = produktionsteile
             .filter(auftrag => auftrag.menge > 0 && ![16, 17, 26].includes(auftrag.id))
             .sort((a, b) => preferedOrder.indexOf(a.id) - preferedOrder.indexOf(b.id))
-            .map(auftrag =>
-                new ProduktionsAuftragDTO(getOriginalId(auftrag.id), auftrag.menge)
+            .map(auftrag => {
+                    let menge = auftrag.menge;
+
+                    if (allowedDecimalPlaces.includes(auftrag.id)) {
+                        menge = removeDecimalPlaces(auftrag.id, menge);
+                    }
+
+                    return new ProduktionsAuftragDTO(getOriginalId(auftrag.id), menge)
+                }
             )
 
 
@@ -297,7 +332,8 @@ export function TeileProduktion() {
             produktionsAuftrag: production
         });
 
-
+        setSpeicherInfo(true);
+        setTimeout(() => setSpeicherInfo(false), 3000);
     }
 
     function formatZahl(id: number, wert: number): string {
@@ -383,10 +419,17 @@ export function TeileProduktion() {
 
             <br/>
 
+            {speicherInfo && (
+                <div className="text-center mt-3">
+                    <div className="alert alert-primary" role="alert">
+                        Eigenfertigprodukt Produktionsaufträge wurde erfolgreich gespeichert.
+                    </div>
+                </div>
+            )}
             <Button className="Button"
                     onClick={save}
             >
-                Produktionsplan Speichern
+                {t('Speichern')}
             </Button>
         </div>
     );
