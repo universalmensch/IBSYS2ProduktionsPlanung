@@ -11,7 +11,7 @@ export default function Navbar() {
 
     return (
         <nav className="navbar navbar-expand-lg navbar-light bg-primary fixed-top">
-            <Link className="navbar-brand mx-3" to="/">{t('navbar.title')}</Link>
+            <Link className="navbar-brand mx-3" to="/IBSYS2ProduktionsPlanung/">{t('navbar.title')}</Link>
 
             <Link className="navbar-item text-decoration-none text-dark px-1" to="/Produktionsplanung">
                 {t('navbar.Produktionsplanung')}
