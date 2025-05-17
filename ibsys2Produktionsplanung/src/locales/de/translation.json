@@ -6,12 +6,12 @@
   "navbar": {
     "title": "Lieferkettenmanagement",
     "Produktionsplanung": "Produktionsplanung",
-    "Minutenplanung": "Minutenplanung",
+    "Minutenplanung": "Kapazitätsplanung",
     "KaufteilDisposition": "Kaufteil-Disposition",
     "TeileProduktion": "TeileProduktion"
   },
   "Produktionsplanung": "Produktionsplanung",
-    "Minutenplanung": "Minutenplanung",
+    "Minutenplanung": "Kapazitätsplanung",
     "KaufteilDisposition": "Kaufteil-Disposition",
     "TeileProduktion": "TeileProduktion",
     "Bezeichnung": "Bezeichnung",
@@ -27,7 +27,7 @@
     "Differenz zu max. Wochenarbeitszeit": "Differenz zu max. Wochenarbeitszeit",
     "Schichten und Überstunden / Überzeit pro Tag": "Schichten und Überstunden / Überzeit pro Tag",
     "Benötigte Überstunden / pro Tag": "Benötigte Überstunden / pro Tag",
-    "Benötigte Zusatzschichten": "Benötigte Zusatzschichten",
+    "Benötigte Zusatzschichten": "Benötigte Schichten",
     "Warteliste je Arbeitsplatz (timeNeed je Teil)": "Warteliste je Arbeitsplatz (Rückstandszeit je Teil)",
     "Arbeitsplatz": "Arbeitsplatz",
     "Periode": "Periode",

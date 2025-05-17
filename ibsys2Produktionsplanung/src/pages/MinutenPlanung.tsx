@@ -1,6 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {Button, Table} from 'react-bootstrap';
-import {LinkContainer} from 'react-router-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/minutenplanung.css'
 import {useGeneralStore} from '../helper/GeneralStoreContext';
@@ -393,16 +392,16 @@ export const MinutenPlanung = () => {
         },
     ], [t]);
 
-    const [ruestzeitGesamt, setRuestzeitGesamt] = useState(Array(15).fill(0));
+     const ruestzeitEinfach = [
+        60, 80, 60, 80, 0, 60, 210, 155, 140, 120, 80, 0, 0, 0, 30
+    ];
+
+
+    const [ruestzeitGesamt, setRuestzeitGesamt] = useState(ruestzeitEinfach);
     const [rueckstandKapa, setRueckstandKapa] = useState<number[]>(Array(15).fill(0));
     const [rueckstandRuestzeit, setRueckstandRuestzeit] = useState<number[]>(Array(15).fill(0));
     const [gesamtKapaBedarf, setGesamtKapaBedarf] = useState<number[]>(Array(15).fill(0));
     const [initialRuestzeitWurdeGesetzt, setInitialRuestzeitWurdeGesetzt] = useState(false);
-
-
-    console.log('Rückstandkapa: ' + rueckstandKapa);
-    console.log('Rückstandkapa (number[]):', rueckstandKapa);
-
     const [kapaBedarf, setKapaBedarf] = useState<number[]>(Array(15).fill(0));
 
     useEffect(() => {
@@ -434,30 +433,17 @@ export const MinutenPlanung = () => {
 
 
     useEffect(() => {
-
-        console.log('Berechne gesamtKapaBedarf mit:');
-        console.log('kapaBedarf', kapaBedarf);
-        console.log('ruestzeitGesamt', ruestzeitGesamt);
-        console.log('rueckstandKapa', rueckstandKapa);
-        console.log('rueckstandRuestzeit', rueckstandRuestzeit);
-
         const gesamt = Array.from({length: 15}, (_, i) => {
             const kapa = typeof kapaBedarf[i] === 'number' ? kapaBedarf[i] as number : 0;
             const ruest = typeof ruestzeitGesamt[i] === 'number' ? ruestzeitGesamt[i] : 0;
             const ruecksKapa = typeof rueckstandKapa[i] === 'number' ? rueckstandKapa[i] : 0;
             const ruecksRuest = typeof rueckstandRuestzeit[i] === 'number' ? rueckstandRuestzeit[i] : 0;
 
-            console.log('Rückstandkapa: ' + rueckstandKapa);
-            console.log('Rückkapa: ' + ruecksKapa);
             return kapa + ruest + ruecksKapa + ruecksRuest;
         });
 
         setGesamtKapaBedarf(gesamt);
     }, [kapaBedarf, ruestzeitGesamt, rueckstandKapa, rueckstandRuestzeit]);
-
-    const ruestzeitEinfach = [
-        60, 80, 60, 80, 0, 60, 210, 155, 140, 120, 80, 0, 0, 0, 30
-    ];
 
     const handleRuestzeitChange = (index: number, value: string) => {
         const neueWerte = [...ruestzeitGesamt];
@@ -472,60 +458,74 @@ export const MinutenPlanung = () => {
 
     //Das (schichtUndÜberstund) ist auch ein Schleifencode wie bei diffMaxArbeitszeit. Nur ist er einfacher und verständlicher geschrieben.
 
-    // Neues Array mit 15 Spalten erstellen
-    const schichtUndÜberstund: (number | '')[] = [];
+    const schichtUndÜberstund = useMemo(() => {
+        return Array.from({ length: 15 }, (_, i) => {
+            const differenzZurMaxZeit = diffMaxArbeitszeit[i];
+            return typeof differenzZurMaxZeit === 'number'
+            ? differenzZurMaxZeit / 5
+            : '';
+        });
+    }, [diffMaxArbeitszeit]);
 
-// Schleife über alle 15 Spalten (Arbeitsplätze)
-    for (let i = 0; i < 15; i++) {
-        // Wert aus diffMaxArbeitszeit an der aktuellen Position holen
-        const differenzZurMaxZeit = diffMaxArbeitszeit[i];
-
-        // Prüfen, ob es sich um eine gültige Zahl handelt
-        if (typeof differenzZurMaxZeit === 'number') {
-            // Wenn ja: Durch 5 teilen, um den durchschnittlichen täglichen Bedarf zu berechnen
-            const durchschnittProTag = differenzZurMaxZeit / 5;
-
-            // Ergebnis im Array speichern
-            schichtUndÜberstund.push(durchschnittProTag);
-        } else {
-            // Wenn kein gültiger Zahlenwert vorliegt, leeren String speichern
-            schichtUndÜberstund.push('');
-        }
-    }
 
     const initialUeberstunde = Array.from({length: 15}, () => 0);
     const [benoetigteUeberstunden, setBenoetigteUeberstunden] = useState<(number | '')[]>(initialUeberstunde);
 
+    useEffect(() => {
+        setBenoetigteUeberstunden(prev => {
+            // Apply threshold logic to each item in schichtUndÜberstund
+            const updated = schichtUndÜberstund.map((value) => {
+            // Example threshold logic (customize as needed)
+            if (typeof value === 'number') {
+                if ((value > 0 && value <=240) || (value > 480 && value <= 720)) {
+                return value > 480 ? value - 480 : value;
+                } else {
+                    return 0
+                }
+            }
+            return ''; // for empty or invalid input
+            });
 
-    const handleUeberstundenChange = (index: number, value: string) => {
-        const updated = [...benoetigteUeberstunden];
-        const num = Number(value);
-        updated[index] = isNaN(num) ? '' : num;
-        setBenoetigteUeberstunden(updated);
-    };
+            if (JSON.stringify(prev) !== JSON.stringify(updated)) {
+            return updated;
+            }
+
+            return prev;
+        });
+    }, [schichtUndÜberstund]);
 
     const initialZusatzschichten = Array.from({length: 15}, (_, i) => (i === 4 ? 0 : 1));
     const [benoetigteZusatzschichten, setBenoetigteZusatzschichten] = useState<(number | '')[]>(initialZusatzschichten);
+    
+    useEffect(() => {
+        setBenoetigteZusatzschichten(prev => {
+            // Apply threshold logic to each item in schichtUndÜberstund
+            const updated = schichtUndÜberstund.map((value) => {
+            // Example threshold logic (customize as needed)
+            if (typeof value === 'number') {
+                if (value <= 720-480) {
+                return 1; // cap at 10
+                } else if (value > 720-480 && value <= 1200-480) {
+                return 2; // floor at 0
+                } else {
+                return 3; // within range
+                }
+            }
+            return ''; // for empty or invalid input
+            });
 
-    const handleZusatzschichtenChange = (index: number, value: string) => {
-        const updated = [...benoetigteZusatzschichten];
-        const num = Number(value);
-        updated[index] = isNaN(num) ? '' : num;
-        setBenoetigteZusatzschichten(updated);
-    };
+            if (JSON.stringify(prev) !== JSON.stringify(updated)) {
+            return updated;
+            }
 
+            return prev;
+        });
+    }, [schichtUndÜberstund]);
+    
     return (
         // <div className="container mt-4">
         <div className="container-fluid mt-4">
             <h1>{t('Minutenplanung')}</h1>
-            <div className="mb-3">
-                <LinkContainer to="/">
-                    <Button className="me-2">{t('Startseite')}</Button>
-                </LinkContainer>
-                <LinkContainer to="/Produktionsplanung">
-                    <Button>{t('Produktionsplanung')}</Button>
-                </LinkContainer>
-            </div>
 
             <Table striped bordered hover className="minuten-tabelle">
 
@@ -637,15 +637,6 @@ export const MinutenPlanung = () => {
                     ))}
                 </tr>
 
-                {/* <tr id="gesamt_kapabedarf" style={{ fontWeight: 'bold', backgroundColor: '#f0f0f0' }} className="label-fett">
-  <td colSpan={4} className="align-middle text-center">Gesamt-Kapazitätsbedarf</td>
-  {gesamtKapaBedarf.map((wert, i) => (
-    <td colSpan={2} key={i} style={{ textAlign: 'center' }} className="text-center">
-      {wert}
-    </td>
-  ))}
-</tr> */}
-
                 <tr className="fw-bold bg-light">
                     <td colSpan={4}>{t('Gesamt Kapazitätsbedarf')}</td>
                     {gesamtKapaBedarf.map((val, i) => (
@@ -665,7 +656,7 @@ export const MinutenPlanung = () => {
 
                         return (
                             <td colSpan={2} key={i} className={cellClass}>
-                                {wert}
+                                {typeof wert == 'number' ? Math.ceil(wert) : ""}
                             </td>
                         );
                     })}
@@ -683,7 +674,7 @@ export const MinutenPlanung = () => {
 
                         return (
                             <td colSpan={2} key={i} className={cellClass}>
-                                {wert}
+                                {typeof wert == 'number' ? Math.ceil(wert) : ""}
                             </td>
                         );
                     })}
@@ -697,31 +688,9 @@ export const MinutenPlanung = () => {
                     <td colSpan={4} className="text-center">{t('Benötigte Überstunden / pro Tag')}</td>
 
                     {benoetigteUeberstunden.map((wert, i) => {
-                        const num = Number(wert);
-                        const isCritical = num > 240 || num < 0;
-
                         return (
-                            <td colSpan={2} key={i} className="text-center">
-                                <input
-                                    type="number"
-                                    value={wert}
-                                    onChange={(e) => {
-                                        // removes leading 0
-                                        // @ts-ignore
-                                        e.target.value = Math.abs(e.target.value);
-                                        handleUeberstundenChange(i, e.target.value)
-                                    }}
-                                    disabled={i === 4}
-                                    readOnly={i === 4}
-                                    style={{
-                                        width: '100%',
-                                        textAlign: 'center',
-                                        border: '1px solid #ccc',
-                                        backgroundColor: i === 4 ? '#f0f0f0' : 'white',
-                                        color: i === 4 ? 'gray' : isCritical ? 'red' : 'inherit',
-                                        fontWeight: isCritical ? 'bold' : 'normal',
-                                    }}
-                                />
+                            <td colSpan={2} key={i}>
+                                {typeof wert == 'number' ? Math.ceil(wert) : ""}
                             </td>
                         );
                     })}
@@ -731,35 +700,9 @@ export const MinutenPlanung = () => {
                     <td colSpan={4} className="text-center">{t('Benötigte Zusatzschichten')}</td>
 
                     {benoetigteZusatzschichten.map((wert, i) => {
-                        const num = Number(wert);
-                        let isCritical = Boolean(false);
-                        if (num > 3 || num < 1) {
-                            isCritical = true;
-                        }
-                        ;
-
                         return (
-                            <td colSpan={2} key={i} className="text-center">
-                                <input
-                                    type="number"
-                                    value={wert}
-                                    onChange={(e) => {
-                                        // removes leading 0
-                                        // @ts-ignore
-                                        e.target.value = Math.abs(e.target.value);
-                                        handleZusatzschichtenChange(i, e.target.value);
-                                    }}
-                                    disabled={i === 4}
-                                    readOnly={i === 4}
-                                    style={{
-                                        width: '100%',
-                                        textAlign: 'center',
-                                        border: '1px solid #ccc',
-                                        backgroundColor: i === 4 ? '#f0f0f0' : 'white',
-                                        color: i === 4 ? 'gray' : isCritical ? 'red' : 'inherit',
-                                        fontWeight: isCritical ? 'bold' : 'normal',
-                                    }}
-                                />
+                            <td colSpan={2} key={i}>
+                                {typeof wert == 'number' ? Math.ceil(wert) : ""}
                             </td>
                         );
                     })}
