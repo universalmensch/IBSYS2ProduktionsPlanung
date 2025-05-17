@@ -20,7 +20,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <Router>
                 <Navbar></Navbar>
                 <Routes>
-                    <Route path="/" element={<Startseite/>}></Route>
+                    <Route path="/IBSYS2ProduktionsPlanung/" element={<Startseite/>}></Route>
                     <Route path="/Produktionsplanung" element={<Produktionsplanung/>}></Route>
                     <Route path="/TeileProduktion" element={<TeileProduktion/>}></Route>
                     <Route path="/ReihenfolgeLosgroessenPlanung" element={<ReihenfolgeLosgroessenPlanung/>}></Route>
