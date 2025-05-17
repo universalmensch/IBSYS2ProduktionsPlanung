@@ -1,12 +1,13 @@
 import {Button, Dropdown, DropdownButton, Table} from 'react-bootstrap';
-import {LinkContainer} from 'react-router-bootstrap';
 import {useGeneralStore} from '../helper/GeneralStoreContext';
 import {ProduktionsPlanDTO} from "../dtos/ProduktionsPlanDTO.tsx";
 import {Kaufteil, Kaufteile} from '../dtos/Kaufteile.tsx';
 import {useState} from "react";
 import {BestellTyp, BestellungDTO} from "../dtos/BestellungDTO.tsx";
+import {useTranslation} from "react-i18next";
 
 export function Kaufteildisposition() {
+    const {t} = useTranslation();
     const {generalStore, setGeneralStoreData} = useGeneralStore()
 
     const input = generalStore?.input?.results
@@ -20,11 +21,12 @@ export function Kaufteildisposition() {
     const output = generalStore?.output?.input
     const newOrders = output?.orderlist
 
-    const produktionsPlan = generalStore?.produktionsPlan ?? new ProduktionsPlanDTO(0, 0, 0);
+    const produktionsPlan = generalStore?.produktionsPlan ?? new ProduktionsPlanDTO();
 
     const [bestellungen, setBestellungen] = useState<BestellungDTO[]>(initializeBestellungen());
     const [alteBestellungen] = useState<BestellungDTO[]>(initializeAlteBestellungen());
     const [initialisierteKaufteile] = useState<Kaufteil[]>(initializeKaufteile());
+    const [speicherInfo, setSpeicherInfo] = useState(false);
 
     function initializeAlteBestellungen() {
         const result: BestellungDTO[] = [];
@@ -165,6 +167,9 @@ export function Kaufteildisposition() {
                 input: updatedOutput
             }
         });
+
+        setSpeicherInfo(true);
+        setTimeout(() => setSpeicherInfo(false), 3000);
     }
 
     return (
@@ -322,26 +327,18 @@ export function Kaufteildisposition() {
             </Table>
 
             <br/>
-
+            {speicherInfo && (
+                <div className="text-center mt-3">
+                    <div className="alert alert-primary" role="alert">
+                        Bestellungen erfolgreich gespeichert.
+                    </div>
+                </div>
+            )}
             <Button className="Button"
                     onClick={save}
             >
-                Bestellungen Speichern
+                {t('Speichern')}
             </Button>
-
-            <br/>
-            <br/>
-
-            <LinkContainer to="/Minutenplanung">
-                <Button className="Button">
-                    Zurück
-                </Button>
-            </LinkContainer>
-            <LinkContainer to="/">
-                <Button className="Button">
-                    Weiter
-                </Button>
-            </LinkContainer>
         </div>
     );
 }

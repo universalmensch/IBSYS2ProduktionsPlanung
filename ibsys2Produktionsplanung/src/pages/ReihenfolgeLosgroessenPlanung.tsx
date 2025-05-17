@@ -2,13 +2,16 @@ import {useState} from 'react';
 import {Button, Card, Col, Form, Row} from 'react-bootstrap';
 import {ProduktionsAuftragDTO} from "../dtos/ProduktionsAuftragDTO.tsx";
 import {useGeneralStore} from "../helper/GeneralStoreContext.tsx";
+import {useTranslation} from "react-i18next";
 
 export function ReihenfolgeLosgroessenPlanung() {
+    const {t} = useTranslation();
     const {generalStore, setGeneralStoreData} = useGeneralStore()
     const output = generalStore?.output?.input
     const Auftraege = generalStore?.produktionsAuftrag ?? [new ProduktionsAuftragDTO(0, 0)]
 
     const [auftraege, setAuftraege] = useState<ProduktionsAuftragDTO[]>(Auftraege);
+    const [speicherInfo, setSpeicherInfo] = useState(false);
 
     const resetProduktionsAuftraege = () => {
         setAuftraege(Auftraege);
@@ -46,6 +49,9 @@ export function ReihenfolgeLosgroessenPlanung() {
                 input: updatedOutput
             }
         });
+
+        setSpeicherInfo(true);
+        setTimeout(() => setSpeicherInfo(false), 3000);
     };
 
     const duplicateAuftrag = (index: number) => {
@@ -162,6 +168,14 @@ export function ReihenfolgeLosgroessenPlanung() {
                     </Card.Body>
                 </Card>
             ))}
+            <br/>
+            {speicherInfo && (
+                <div className="text-center mt-3">
+                    <div className="alert alert-primary" role="alert">
+                        Reihenfolge und Losgrößen erfolgreich gespeichert.
+                    </div>
+                </div>
+            )}
             <Row className="align-items-end">
                 <Col md={6}>
                     <Button onClick={addAuftrag} variant="primary">
@@ -170,7 +184,7 @@ export function ReihenfolgeLosgroessenPlanung() {
                 </Col>
                 <Col md={6}>
                     <Button onClick={save} variant="primary">
-                        Aufträge speichern
+                        {t('Speichern')}
                     </Button>
                 </Col>
             </Row>
