@@ -85,9 +85,9 @@ export const MinutenPlanung = () => {
 //Funktion für den Export der XML-Daten:
     function save() {
         const workingTimes: WorkingTime[] = benoetigteZusatzschichten.map((shift, index) => {
-            const overtime = benoetigteUeberstunden[index] === '' ? 0 : Number(benoetigteUeberstunden[index]);
-            const shiftVal = shift === '' ? 0 : Number(shift);
-
+            const overtime = benoetigteUeberstunden[index] === '' ? 0 : index == 4 ? 0 : Number(benoetigteUeberstunden[index]);
+            const shiftVal = shift === '' ? 0 : index == 4 ? 0 : Number(shift);
+  
             return {
                 station: index + 1,
                 shift: shiftVal,
