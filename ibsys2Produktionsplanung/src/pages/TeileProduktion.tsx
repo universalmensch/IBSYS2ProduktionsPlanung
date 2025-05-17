@@ -17,7 +17,7 @@ export function TeileProduktion() {
     const inBearbeitung = input?.ordersinwork?.workplace
     const verkaufsauftraege = input?.forecast || {p1: 0, p2: 0, p3: 0}
 
-    const produktionsPlan = generalStore?.produktionsPlan ?? new ProduktionsPlanDTO(0, 0, 0);
+    const produktionsPlan = generalStore?.produktionsPlan ?? new ProduktionsPlanDTO();
 
     const [produktionsteile, setProduktionsteile] = useState<Produktionsteil[]>(initializeProduktionsteile());
     const [speicherInfo, setSpeicherInfo] = useState(false);

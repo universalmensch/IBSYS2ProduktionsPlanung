@@ -21,7 +21,7 @@ export function Kaufteildisposition() {
     const output = generalStore?.output?.input
     const newOrders = output?.orderlist
 
-    const produktionsPlan = generalStore?.produktionsPlan ?? new ProduktionsPlanDTO(0, 0, 0);
+    const produktionsPlan = generalStore?.produktionsPlan ?? new ProduktionsPlanDTO();
 
     const [bestellungen, setBestellungen] = useState<BestellungDTO[]>(initializeBestellungen());
     const [alteBestellungen] = useState<BestellungDTO[]>(initializeAlteBestellungen());

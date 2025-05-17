@@ -1,24 +1,6 @@
 export class ProduktionsPlanDTO {
-    private readonly _p1Restbestand: number;
-    private readonly _p2Restbestand: number;
-    private readonly _p3Restbestand: number;
 
-    constructor(p1Restbestand: number, p2Restbestand: number, p3Restbestand: number) {
-        this._p1Restbestand = p1Restbestand;
-        this._p2Restbestand = p2Restbestand;
-        this._p3Restbestand = p3Restbestand;
-    }
-
-    get p1Restbestand(): number {
-        return this._p1Restbestand;
-    }
-
-    get p2Restbestand(): number {
-        return this._p2Restbestand;
-    }
-
-    get p3Restbestand(): number {
-        return this._p3Restbestand;
+    constructor() {
     }
 
     private _p1ProduktionWoche0?: number;

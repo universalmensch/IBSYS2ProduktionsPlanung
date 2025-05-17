@@ -8,6 +8,7 @@ export function Produktionsplanung() {
     const {t} = useTranslation();
     const {generalStore, setGeneralStoreData} = useGeneralStore();
     const input = generalStore?.input;
+    const output = generalStore?.output?.input;
 
     if (!input) {
         return <p className="text-center mt-5">Keine XML-Daten verfügbar.</p>;
@@ -15,7 +16,7 @@ export function Produktionsplanung() {
 
     const forecast = input.results.forecast;
 
-    const startPeriode = Number(input?.results?.period ?? 0) + 1;
+    const startPeriode = Number(input.results?.period ?? 0) + 1;
 
     const [manuellePrognose, setManuellePrognose] = useState({
         p1: [0, 0, 0],
@@ -24,12 +25,18 @@ export function Produktionsplanung() {
     });
 
     const [manuelleProduktion, setManuelleProduktion] = useState({
-        p1: [0, 0, 0],
-        p2: [0, 0, 0],
-        p3: [0, 0, 0]
+        p1: [0, 0, 0, 0],
+        p2: [0, 0, 0, 0],
+        p3: [0, 0, 0, 0]
     });
 
-    const [vertriebswunsch, setVertriebswunsch] = useState({p1: 0, p2: 0, p3: 0});
+    const [vertriebswunsch, setVertriebswunsch] = useState(
+        {
+            forecast,
+            direktverkauf: {p1: 0, p2: 0, p3: 0},
+            preis: {p1: 0, p2: 0, p3: 0},
+            konventionalStrafe: {p1: 0, p2: 0, p3: 0},
+        });
 
     const getRestbestand = (articleId: number): number => {
         const artikel = input.results.warehousestock.article.find(a => Number(a.id) === articleId);
@@ -42,10 +49,10 @@ export function Produktionsplanung() {
         const aktuellerBestand = getRestbestand(artikelId);
 
         const geplanteMengen = [
-            vertriebswunsch[produkt],
             manuelleProduktion[produkt][0],
             manuelleProduktion[produkt][1],
-            manuelleProduktion[produkt][2]
+            manuelleProduktion[produkt][2],
+            manuelleProduktion[produkt][3]
         ];
 
         const prognosen = [
@@ -67,29 +74,67 @@ export function Produktionsplanung() {
     const [speicherInfo, setSpeicherInfo] = useState(false);
 
     const handlePlanErstellen = () => {
-        const plan = new ProduktionsPlanDTO(
-            getRestbestand(1),
-            getRestbestand(2),
-            getRestbestand(3)
-        );
+        const plan = new ProduktionsPlanDTO();
 
-        // Woche 0
-        plan.p1ProduktionWoche0 = vertriebswunsch.p1;
-        plan.p2ProduktionWoche0 = vertriebswunsch.p2;
-        plan.p3ProduktionWoche0 = vertriebswunsch.p3;
-
-        // Woche 1–3
-        for (let i = 0; i < 3; i++) {
+        // Woche 0–4
+        for (let i = 0; i < 4; i++) {
             // @ts-ignore
-            plan[`p1ProduktionWoche${i + 1}`] = manuelleProduktion.p1[i];
+            plan[`p1ProduktionWoche${i}`] = manuelleProduktion.p1[i];
             // @ts-ignore
-            plan[`p2ProduktionWoche${i + 1}`] = manuelleProduktion.p2[i];
+            plan[`p2ProduktionWoche${i}`] = manuelleProduktion.p2[i];
             // @ts-ignore
-            plan[`p3ProduktionWoche${i + 1}`] = manuelleProduktion.p3[i];
+            plan[`p3ProduktionWoche${i}`] = manuelleProduktion.p3[i];
         }
 
-        setGeneralStoreData({...generalStore, produktionsPlan: plan});
+        const sellWish = [{
+            article: 1,
+            quantity: vertriebswunsch["forecast"]["p1"],
+        }, {
+            article: 2,
+            quantity: vertriebswunsch["forecast"]["p2"],
+        }, {
+            article: 3,
+            quantity: vertriebswunsch["forecast"]["p3"],
+        }];
+
+        const selldirect = [{
+            article: 1,
+            quantity: vertriebswunsch["direktverkauf"]["p1"],
+            price: vertriebswunsch["preis"]["p1"],
+            penalty: vertriebswunsch["konventionalStrafe"]["p1"],
+        }, {
+            article: 2,
+            quantity: vertriebswunsch["direktverkauf"]["p2"],
+            price: vertriebswunsch["preis"]["p2"],
+            penalty: vertriebswunsch["konventionalStrafe"]["p2"],
+        }, {
+            article: 3,
+            quantity: vertriebswunsch["direktverkauf"]["p3"],
+            price: vertriebswunsch["preis"]["p3"],
+            penalty: vertriebswunsch["konventionalStrafe"]["p3"],
+        }];
+
+
+        const updatedOutput = {
+            ...(output ?? {}),
+            sellWish: {
+                item: sellWish
+            },
+            selldirect: {
+                item: selldirect
+            }
+        };
+
+        setGeneralStoreData({
+            ...generalStore,
+            produktionsPlan: plan,
+            output: {
+                input: updatedOutput
+            }
+        });
+
         console.log("ProduktionsPlan gespeichert:", plan);
+
         setSpeicherInfo(true);
         setTimeout(() => setSpeicherInfo(false), 3000);
     };
@@ -203,21 +248,17 @@ export function Produktionsplanung() {
                                             <Form.Control
                                                 type="number"
                                                 min={0}
-                                                value={i === 0 ? vertriebswunsch[key] : manuelleProduktion[key][i - 1]}
+                                                value={manuelleProduktion[key][i]}
                                                 onChange={(e) => {
                                                     // removes leading 0
                                                     // @ts-ignore
                                                     e.target.value = Math.abs(e.target.value);
                                                     const value = Math.max(0, parseInt(e.target.value) || 0);
-                                                    if (i === 0) {
-                                                        setVertriebswunsch(prev => ({...prev, [key]: value}));
-                                                    } else {
-                                                        setManuelleProduktion(prev => {
-                                                            const updated = [...prev[key]];
-                                                            updated[i - 1] = value;
-                                                            return {...prev, [key]: updated};
-                                                        });
-                                                    }
+                                                    setManuelleProduktion(prev => {
+                                                        const updated = [...prev[key]];
+                                                        updated[i] = value;
+                                                        return {...prev, [key]: updated};
+                                                    });
                                                 }}
                                                 style={{width: '150px', margin: '0 auto', textAlign: 'center'}}
                                             />
@@ -237,17 +278,128 @@ export function Produktionsplanung() {
                     })}
                     </tbody>
                 </Table>
-                {speicherInfo && (
-                    <div className="text-center mt-3">
-                        <div className="alert alert-primary" role="alert">
-                            Produktionsplan wurde erfolgreich gespeichert.
-                        </div>
-                    </div>
-                )}
-                <div className="text-center mt-3">
-                    <Button variant="primary" onClick={handlePlanErstellen}>{t('Speichern')}</Button>
-                </div>
             </section>
+
+            <section className="mb-5">
+                <h4>Vertriebswunsch und Direktverkauf:</h4>
+                <Table bordered hover responsive className="mt-3">
+                    <thead>
+                    <tr>
+                        <th>Produkt</th>
+                        <th>Vertriebswunsch</th>
+                        <th>Direktverkauf</th>
+                        <th>Preis / Einheit</th>
+                        <th>Konventionalstrafe</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {(['p1', 'p2', 'p3'] as const).map((key, index) => {
+                        return (
+                            <tr key={key}>
+                                <td>Produkt {index + 1}</td>
+                                <td>
+                                    <Form.Group className="text-center">
+                                        <Form.Control
+                                            type="number"
+                                            min={0}
+                                            value={vertriebswunsch["forecast"][key]}
+                                            disabled
+                                            style={{width: '150px', margin: '0 auto', textAlign: 'center'}}
+                                        />
+                                    </Form.Group>
+                                </td>
+                                <td>
+                                    <Form.Group className="text-center">
+                                        <Form.Control
+                                            type="number"
+                                            min={0}
+                                            value={vertriebswunsch["direktverkauf"][key]}
+                                            onChange={(e) => {
+                                                // removes leading 0
+                                                // @ts-ignore
+                                                e.target.value = Math.abs(e.target.value);
+                                                const value = Math.max(0, parseInt(e.target.value) || 0);
+                                                setVertriebswunsch(prev => {
+                                                    return {
+                                                        ...prev,
+                                                        direktverkauf: {
+                                                            ...prev["direktverkauf"],
+                                                            [key]: value
+                                                        }
+                                                    };
+                                                });
+                                            }}
+                                            style={{width: '150px', margin: '0 auto', textAlign: 'center'}}
+                                        />
+                                    </Form.Group>
+                                </td>
+                                <td>
+                                    <Form.Group className="text-center">
+                                        <Form.Control
+                                            type="number"
+                                            min={0}
+                                            value={vertriebswunsch["preis"][key]}
+                                            onChange={(e) => {
+                                                // removes leading 0
+                                                // @ts-ignore
+                                                e.target.value = Math.abs(e.target.value);
+                                                const value = Math.max(0, parseInt(e.target.value) || 0);
+                                                setVertriebswunsch(prev => {
+                                                    return {
+                                                        ...prev,
+                                                        preis: {
+                                                            ...prev["preis"],
+                                                            [key]: value
+                                                        }
+                                                    };
+                                                });
+                                            }}
+                                            style={{width: '150px', margin: '0 auto', textAlign: 'center'}}
+                                        />
+                                    </Form.Group>
+                                </td>
+                                <td>
+                                    <Form.Group className="text-center">
+                                        <Form.Control
+                                            type="number"
+                                            min={0}
+                                            value={vertriebswunsch["konventionalStrafe"][key]}
+                                            onChange={(e) => {
+                                                // removes leading 0
+                                                // @ts-ignore
+                                                e.target.value = Math.abs(e.target.value);
+                                                const value = Math.max(0, parseInt(e.target.value) || 0);
+                                                setVertriebswunsch(prev => {
+                                                    return {
+                                                        ...prev,
+                                                        konventionalStrafe: {
+                                                            ...prev["konventionalStrafe"],
+                                                            [key]: value
+                                                        }
+                                                    };
+                                                });
+                                            }}
+                                            style={{width: '150px', margin: '0 auto', textAlign: 'center'}}
+                                        />
+                                    </Form.Group>
+                                </td>
+                            </tr>
+                        );
+                    })}
+                    </tbody>
+                </Table>
+            </section>
+
+            {speicherInfo && (
+                <div className="text-center mt-3">
+                    <div className="alert alert-primary" role="alert">
+                        Produktionsplan wurde erfolgreich gespeichert.
+                    </div>
+                </div>
+            )}
+            <div className="text-center mt-3">
+                <Button variant="primary" onClick={handlePlanErstellen}>{t('Speichern')}</Button>
+            </div>
         </Container>
     );
 }
