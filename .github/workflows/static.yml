@@ -22,7 +22,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
   deploy:
     environment:
       name: github-pages
@@ -38,8 +37,16 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Clean install dependencies (fix Rollup issue)
+        working-directory: ./ibsys2Produktionsplanung
+        run: |
+          rm -rf node_modules package-lock.json
+          npm cache clean --force
+          npm install
+
+      - name: Verify Rollup install
+        working-directory: ./ibsys2Produktionsplanung
+        run: npx rollup --version
 
       - name: Build Vite app
         run: npm run build
@@ -55,3 +62,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
