@@ -487,7 +487,7 @@ export const MinutenPlanung = () => {
                     return 0
                 }
             }
-            return ''; // for empty or invalid input
+            return ''; 
             });
 
             if (JSON.stringify(prev) !== JSON.stringify(updated)) {
@@ -503,19 +503,17 @@ export const MinutenPlanung = () => {
     
     useEffect(() => {
         setBenoetigteZusatzschichten(prev => {
-            // Apply threshold logic to each item in schichtUndÜberstund
             const updated = schichtUndÜberstund.map((value) => {
-            // Example threshold logic (customize as needed)
             if (typeof value === 'number') {
                 if (value <= 720-480) {
-                return 1; // cap at 10
+                return 1; 
                 } else if (value > 720-480 && value <= 1200-480) {
-                return 2; // floor at 0
+                return 2;
                 } else {
-                return 3; // within range
+                return 3; 
                 }
             }
-            return ''; // for empty or invalid input
+            return '';
             });
 
             if (JSON.stringify(prev) !== JSON.stringify(updated)) {
@@ -527,7 +525,6 @@ export const MinutenPlanung = () => {
     }, [schichtUndÜberstund]);
     
     return (
-        // <div className="container mt-4">
         <div className="container-fluid mt-4">
             <h1>{t('Minutenplanung')}</h1>
 
@@ -623,6 +620,7 @@ export const MinutenPlanung = () => {
                             <input
                                 type="number"
                                 value={wert}
+                                disabled={i===4 ? true : false}
                                 onChange={(e) => {
                                     // removes leading 0
                                     // @ts-ignore
@@ -707,7 +705,7 @@ export const MinutenPlanung = () => {
                     {benoetigteZusatzschichten.map((wert, i) => {
                         return (
                             <td colSpan={2} key={i}>
-                                {typeof wert == 'number' ? Math.ceil(wert) : ""}
+                                {typeof wert == 'number' ? Math.ceil(i === 4 ? 0 : wert) : ""}
                             </td>
                         );
                     })}
