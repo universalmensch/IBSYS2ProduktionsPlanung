@@ -21,12 +21,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 <Navbar></Navbar>
                 <Routes>
                     <Route path="/IBSYS2ProduktionsPlanung/" element={<Startseite/>}></Route>
-                    <Route path="/IBSYS2ProduktionsPlanung/Produktionsplanung" element={<Produktionsplanung/>}></Route>
-                    <Route path="/IBSYS2ProduktionsPlanung/TeileProduktion" element={<TeileProduktion/>}></Route>
-                    <Route path="/IBSYS2ProduktionsPlanung/ReihenfolgeLosgroessenPlanung"
+                    <Route path="/Produktionsplanung" element={<Produktionsplanung/>}></Route>
+                    <Route path="/TeileProduktion" element={<TeileProduktion/>}></Route>
+                    <Route path="/ReihenfolgeLosgroessenPlanung"
                            element={<ReihenfolgeLosgroessenPlanung/>}></Route>
-                    <Route path="/IBSYS2ProduktionsPlanung/Minutenplanung" element={<MinutenPlanung/>}></Route>
-                    <Route path="/IBSYS2ProduktionsPlanung/Kaufteildisposition"
+                    <Route path="/Minutenplanung" element={<MinutenPlanung/>}></Route>
+                    <Route path="/Kaufteildisposition"
                            element={<Kaufteildisposition/>}></Route>
                 </Routes>
             </Router>

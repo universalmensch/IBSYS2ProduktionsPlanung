@@ -14,23 +14,23 @@ export default function Navbar() {
             <Link className="navbar-brand mx-3" to="/IBSYS2ProduktionsPlanung/">{t('navbar.title')}</Link>
 
             <Link className="navbar-item text-decoration-none text-dark px-1"
-                  to="/IBSYS2ProduktionsPlanung/Produktionsplanung">
+                  to="/Produktionsplanung">
                 {t('navbar.Produktionsplanung')}
             </Link>
             <Link className="navbar-item text-decoration-none text-dark px-1"
-                  to="/IBSYS2ProduktionsPlanung/TeileProduktion">
+                  to="/TeileProduktion">
                 {t('navbar.TeileProduktion')}
             </Link>
             <Link className="navbar-item text-decoration-none text-dark px-1"
-                  to="/IBSYS2ProduktionsPlanung/ReihenfolgeLosgroessenPlanung">
+                  to="/ReihenfolgeLosgroessenPlanung">
                 {t('navbar.ReihenfolgeLosgroessenPlanung')}
             </Link>
             <Link className="navbar-item text-decoration-none text-dark px-1"
-                  to="/IBSYS2ProduktionsPlanung/Minutenplanung">
+                  to="/Minutenplanung">
                 {t('navbar.Minutenplanung')}
             </Link>
             <Link className="navbar-item text-decoration-none text-dark px-1"
-                  to="/IBSYS2ProduktionsPlanung/KaufteilDisposition">
+                  to="/KaufteilDisposition">
                 {t('navbar.KaufteilDisposition')}
             </Link>
 
