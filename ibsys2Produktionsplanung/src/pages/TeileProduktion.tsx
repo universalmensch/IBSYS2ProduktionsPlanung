@@ -4,8 +4,10 @@ import {ProduktionsPlanDTO} from "../dtos/ProduktionsPlanDTO.tsx";
 import {useState} from "react";
 import {AnzeigeReihenfolge, Produktionsteil, Produktionsteile, SpaceAfterRow} from "../dtos/Produktionsteile.tsx";
 import {ProduktionsAuftragDTO} from "../dtos/ProduktionsAuftragDTO.tsx";
+import {useTranslation} from "react-i18next";
 
 export function TeileProduktion() {
+    const {t} = useTranslation();
     const {generalStore, setGeneralStoreData} = useGeneralStore()
 
     const input = generalStore?.input?.results
@@ -18,6 +20,7 @@ export function TeileProduktion() {
     const produktionsPlan = generalStore?.produktionsPlan ?? new ProduktionsPlanDTO(0, 0, 0);
 
     const [produktionsteile, setProduktionsteile] = useState<Produktionsteil[]>(initializeProduktionsteile());
+    const [speicherInfo, setSpeicherInfo] = useState(false);
 
     function initializeProduktionsteile() {
         const result: Produktionsteil[] = [];
@@ -297,7 +300,8 @@ export function TeileProduktion() {
             produktionsAuftrag: production
         });
 
-
+        setSpeicherInfo(true);
+        setTimeout(() => setSpeicherInfo(false), 3000);
     }
 
     function formatZahl(id: number, wert: number): string {
@@ -383,10 +387,17 @@ export function TeileProduktion() {
 
             <br/>
 
+            {speicherInfo && (
+                <div className="text-center mt-3">
+                    <div className="alert alert-primary" role="alert">
+                        Eigenfertigprodukt Produktionsaufträge wurde erfolgreich gespeichert.
+                    </div>
+                </div>
+            )}
             <Button className="Button"
                     onClick={save}
             >
-                Produktionsplan Speichern
+                {t('Speichern')}
             </Button>
         </div>
     );

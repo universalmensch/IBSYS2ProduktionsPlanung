@@ -1,10 +1,11 @@
 import {useState} from 'react';
 import {Button, Container, Form, Table} from 'react-bootstrap';
-import {LinkContainer} from 'react-router-bootstrap';
 import {ProduktionsPlanDTO} from '../dtos/ProduktionsPlanDTO';
 import {useGeneralStore} from '../helper/GeneralStoreContext';
+import {useTranslation} from "react-i18next";
 
 export function Produktionsplanung() {
+    const {t} = useTranslation();
     const {generalStore, setGeneralStoreData} = useGeneralStore();
     const input = generalStore?.input;
 
@@ -90,7 +91,7 @@ export function Produktionsplanung() {
         setGeneralStoreData({...generalStore, produktionsPlan: plan});
         console.log("ProduktionsPlan gespeichert:", plan);
         setSpeicherInfo(true);
-        setTimeout(() => setSpeicherInfo(false), 2200);
+        setTimeout(() => setSpeicherInfo(false), 3000);
     };
 
     return (
@@ -244,17 +245,8 @@ export function Produktionsplanung() {
                     </div>
                 )}
                 <div className="text-center mt-3">
-                    <Button variant="primary" onClick={handlePlanErstellen}>Speichern</Button>
+                    <Button variant="primary" onClick={handlePlanErstellen}>{t('Speichern')}</Button>
                 </div>
-            </section>
-
-            <section className="d-flex justify-content-center gap-3 mt-4">
-                <LinkContainer to="/">
-                    <Button variant="outline-secondary">Startseite</Button>
-                </LinkContainer>
-                <LinkContainer to="/Teileproduktion">
-                    <Button variant="outline-secondary">Teileproduktion</Button>
-                </LinkContainer>
             </section>
         </Container>
     );
