@@ -49,6 +49,7 @@ jobs:
         run: npx rollup --version
 
       - name: Build Vite app
+        working-directory: ./ibsys2Produktionsplanung
         run: npm run build
 
       - name: Setup Pages
@@ -57,7 +58,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
+          path: './ibsys2Produktionsplanung/dist'
 
       - name: Deploy to GitHub Pages
         id: deployment
