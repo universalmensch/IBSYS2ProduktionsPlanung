@@ -77,7 +77,8 @@
     "periodDemand": "Bedarf Periode",
     "discountAmount": "Diskontmenge",
     "yearlyDemand": "Jahresbedarf/ Bestellkosten / Wert / Lagerkostensatz",
-    "optimalOrderQty": "Optimale Bestellmenge"
+    "optimalOrderQty": "Optimale Bestellmenge",
+    "optimize": "Bestellprogramm optimieren"
   },
   "NORMAL": "NORMAL",
   "EIL": "EIL",

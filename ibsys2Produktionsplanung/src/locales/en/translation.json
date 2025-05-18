@@ -78,7 +78,8 @@
     "periodDemand": "Period Demand",
     "discountAmount": "Discount Amount",
     "yearlyDemand": "Yearly Demand / Order Costs / Value / Stock Cost Rate",
-    "optimalOrderQty": "Optimal Order Quantity"
+    "optimalOrderQty": "Optimal Order Quantity",
+    "optimize": "Optimize Orders"
   },
   "NORMAL": "STANDARD",
   "EIL": "EXPRESS",
