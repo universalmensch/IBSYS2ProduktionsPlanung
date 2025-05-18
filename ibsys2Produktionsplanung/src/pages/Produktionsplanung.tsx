@@ -373,7 +373,7 @@ export function Produktionsplanung() {
                                             min={0}
                                             value={vertriebswunsch["konventionalStrafe"][key]}
                                             onChange={(e) => {
-                                                // removes leading 0
+                                                // Removes leading 0
                                                 // @ts-ignore
                                                 e.target.value = Math.abs(e.target.value);
                                                 const input = e.target.value.replace(",", ".");
