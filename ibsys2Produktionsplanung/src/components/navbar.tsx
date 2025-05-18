@@ -11,26 +11,27 @@ export default function Navbar() {
 
     return (
         <nav className="navbar navbar-expand-lg navbar-light bg-primary fixed-top">
-            <Link className="navbar-brand mx-3" to="/IBSYS2ProduktionsPlanung/">{t('navbar.title')}</Link>
+            <Link className="navbar-brand mx-3 navbar-link-spacing"
+                  to="/IBSYS2ProduktionsPlanung/">{t('navbar.title')}</Link>
 
-            <Link className="navbar-item text-decoration-none text-dark px-1"
-                  to="/Produktionsplanung">
+            <Link className="navbar-item text-decoration-none text-dark px-1 navbar-link-spacing"
+                  to="/IBSYS2ProduktionsPlanung/Produktionsplanung">
                 {t('navbar.Produktionsplanung')}
             </Link>
-            <Link className="navbar-item text-decoration-none text-dark px-1"
-                  to="/TeileProduktion">
+            <Link className="navbar-item text-decoration-none text-dark px-1 navbar-link-spacing"
+                  to="/IBSYS2ProduktionsPlanung/EigenfertigungDisposition">
                 {t('navbar.TeileProduktion')}
             </Link>
-            <Link className="navbar-item text-decoration-none text-dark px-1"
-                  to="/ReihenfolgeLosgroessenPlanung">
+            <Link className="navbar-item text-decoration-none text-dark px-1 navbar-link-spacing"
+                  to="/IBSYS2ProduktionsPlanung/ReihenfolgeLosgroessenPlanung">
                 {t('navbar.ReihenfolgeLosgroessenPlanung')}
             </Link>
-            <Link className="navbar-item text-decoration-none text-dark px-1"
-                  to="/Minutenplanung">
+            <Link className="navbar-item text-decoration-none text-dark px-1 navbar-link-spacing"
+                  to="/IBSYS2ProduktionsPlanung/Minutenplanung">
                 {t('navbar.Minutenplanung')}
             </Link>
-            <Link className="navbar-item text-decoration-none text-dark px-1"
-                  to="/KaufteilDisposition">
+            <Link className="navbar-item text-decoration-none text-dark px-1 navbar-link-spacing"
+                  to="/IBSYS2ProduktionsPlanung/KaufteilDisposition">
                 {t('navbar.KaufteilDisposition')}
             </Link>
 

@@ -6,3 +6,7 @@ body {
     align-items: center;
     text-align: center;
 }
+
+.navbar-link-spacing {
+    margin-right: 25px;
+}
