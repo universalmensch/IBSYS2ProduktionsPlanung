@@ -24,7 +24,6 @@ export function Kaufteildisposition() {
     const produktionsPlan = generalStore?.produktionsPlan ?? new ProduktionsPlanDTO();
 
     const [bestellungen, setBestellungen] = useState<BestellungDTO[]>(initializeBestellungen());
-    console.log(bestellungen)
     const [alteBestellungen] = useState<BestellungDTO[]>(initializeAlteBestellungen());
     const [initialisierteKaufteile] = useState<Kaufteil[]>(initializeKaufteile());
     const [speicherInfo, setSpeicherInfo] = useState(false);
@@ -177,6 +176,7 @@ export function Kaufteildisposition() {
     }
 
     function checkWhenRestbestandExhausted(periode: number, kaufteil: Kaufteil) {
+       
     let restbestandKaufteil = Number(kaufteil.restbestandVorperiode);  // Initial stock
     let weeks = [0, 1, 2, 3];  // Weeks we need to check (Woche 1, Woche 2, Woche 3, Woche 4)
     let bedarf = [
@@ -185,6 +185,13 @@ export function Kaufteildisposition() {
         getWochenBedarf(periode + 2, kaufteil),  // Week 3 demand
         getWochenBedarf(periode + 3, kaufteil),  // Week 4 demand
     ];
+
+    let futureinwardOrder = orders?.find(o => Number(o.article) === kaufteil.id)
+    if(futureinwardOrder) {
+        let eilabzug = futureinwardOrder.mode == 4 ? 2 : 1
+        let futureinwardwhen = Math.ceil((futureinwardOrder.orderperiod - periode) + ((kaufteil.lieferzeit + kaufteil.lieferzeitAbweichung) / 5) / eilabzug)
+        bedarf[futureinwardwhen] -= futureinwardOrder.amount;
+    }    
 
     // Loop over each week
     for (let i = 0; i < weeks.length; i++) {
@@ -206,7 +213,6 @@ export function Kaufteildisposition() {
         let optimizedOrders: BestellungDTO[] =[];
         initialisierteKaufteile.forEach(Kaufteil => {
             const verbraucht = checkWhenRestbestandExhausted(periode,Kaufteil)
-            console.log(verbraucht)
             const lieferdauer = (Kaufteil.lieferzeit + Kaufteil.lieferzeitAbweichung) / 5 + 1
             let order;
             if(lieferdauer > verbraucht && verbraucht != 5)
