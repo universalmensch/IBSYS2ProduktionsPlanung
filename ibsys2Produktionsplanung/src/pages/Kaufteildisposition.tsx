@@ -188,6 +188,9 @@ export function Kaufteildisposition() {
 
     // Loop over each week
     for (let i = 0; i < weeks.length; i++) {
+         if(bedarf[i] === 0) {
+            return 5;
+        }
         restbestandKaufteil -= bedarf[i];  // Subtract demand for that week
 
         // Check if stock is exhausted
@@ -203,9 +206,10 @@ export function Kaufteildisposition() {
         let optimizedOrders: BestellungDTO[] =[];
         initialisierteKaufteile.forEach(Kaufteil => {
             const verbraucht = checkWhenRestbestandExhausted(periode,Kaufteil)
+            console.log(verbraucht)
             const lieferdauer = (Kaufteil.lieferzeit + Kaufteil.lieferzeitAbweichung) / 5 + 1
             let order;
-            if(lieferdauer > verbraucht)
+            if(lieferdauer > verbraucht && verbraucht != 5)
             {
               order = new BestellungDTO(Kaufteil.id,BestellTyp.EIL, getOptimaleBestellmenge(Kaufteil), periode)
             } else if( lieferdauer <= verbraucht && verbraucht != 5){
@@ -262,7 +266,6 @@ export function Kaufteildisposition() {
             </Table>
 
             <br/>
-
             {orders !== undefined && (
                 <Table>
                     <thead>
@@ -304,6 +307,11 @@ export function Kaufteildisposition() {
 
             <br/>
             <p>{t('kaufteildispo.currentStockValue')}: {lagerWert.toFixed(2)} €</p>
+            <Button className="Button"
+                    onClick={optimizeOrders}
+            >
+                {t('kaufteildispo.optimize')}
+            </Button>
 
             <Table>
                 <thead>
@@ -328,7 +336,6 @@ export function Kaufteildisposition() {
                 <tbody>
                {initialisierteKaufteile.map(kaufteil => {
                 const id = kaufteil.id;
-                console.log(bestellungen)
                 const bestellung = bestellungen.find(b => b && b.kaufteilID === id);
 
                 return (
@@ -397,12 +404,6 @@ export function Kaufteildisposition() {
                     onClick={save}
             >
                 {t('Speichern')}
-            </Button>
-
-            <Button className="Button"
-                    onClick={optimizeOrders}
-            >
-                Optimieren
             </Button>
         </div>
     );
