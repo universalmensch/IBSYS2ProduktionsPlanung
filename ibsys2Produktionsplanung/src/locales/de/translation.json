@@ -13,10 +13,11 @@
     "Produktionsplanung": "Produktionsplanung",
     "Minutenplanung": "Kapazitätsplanung",
     "KaufteilDisposition": "Kaufteil-Disposition",
-    "TeileProduktion": "TeileProduktion",
+    "TeileProduktion": "Eigenfertigung-Disposition",
     "ReihenfolgeLosgroessenPlanung": "Reihenfolge- & LosgroessenPlanung"
   },
   "Produktionsplanung": "Produktionsplanung",
+  "Keine XML-Daten verfügbar": "Keine XML-Daten verfügbar",
   "Minutenplanung": "Minutenplanung",
   "KaufteilDisposition": "Kaufteil-Disposition",
   "Bezeichnung": "Bezeichnung",
@@ -66,10 +67,10 @@
     "deliveryTimeDays": "Lieferzeit in Tagen",
     "deviationDays": "Abweichung in Tagen",
     "stock": "Restbestand",
-    "totalDemand": "Gesamt Bedarf",
+    "totalDemand": "Gesamtbedarf",
     "order": "Bestelltyp",
     "amount": "Menge",
-    "orderPeriod": "Bestell Periode",
+    "orderPeriod": "Bestellperiode",
     "currentStockValue": "aktueller Lagerwert",
     "newOrders": "Neue Bestellungen",
     "usage": "Verwendung P1 / P2 / P3",
@@ -93,7 +94,7 @@
     "Speichern": "Speichern"
   },
   "TeileProduktion": {
-    "Teileproduktion": "Teileproduktion",
+    "Teileproduktion": "Eigenfertigung-Disposition",
     "Produktionsteil": "Produktionsteil",
     "Aufträge": "Aufträge",
     "Aus Warteschlangen": "Aus Warteschlangen",
@@ -105,7 +106,7 @@
     "Eigenfertigprodukt Produktionsaufträge wurde erfolgreich gespeichert.": "Eigenfertigprodukt Produktionsaufträge wurde erfolgreich gespeichert.",
     "Speichern": "Speichern"
   },
- "ProdPlanning": {
+  "ProdPlanning": {
     "Produktionsplanung": "Produktionsplanung",
     "Prognose": "Prognose",
     "Produkt": "Produkt",
@@ -119,7 +120,7 @@
     "Konventionalstrafe": "Konventionalstrafe",
     "Produktionsplan gespeichert": "Produktionsplan wurde erfolgreich gespeichert.",
     "Speichern": "Speichern",
-    "Verlaufswunsch":"Vertriebswunsch",
+    "Verlaufswunsch": "Vertriebswunsch",
     "Direktverkauf": "Direktverkauf"
   }
 }

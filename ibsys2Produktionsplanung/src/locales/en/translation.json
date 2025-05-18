@@ -6,20 +6,21 @@
     "upload": "Upload an XML",
     "selectedFile": "Selected file",
     "noFile": "No File selected",
-     "onlyXML": "Please upload an XML"
+    "onlyXML": "Please upload an XML"
   },
   "navbar": {
     "title": "Supply Chain Management",
     "Produktionsplanung": "Production Planning",
     "Minutenplanung": "Minute Planning",
     "KaufteilDisposition": "Purchased Parts Planning",
-    "TeileProduktion": "Parts production",
-    "ReihenfolgeLosgroessenPlanung": "Sequence & lot size planning"
+    "TeileProduktion": "Manufacturing Disposition",
+    "ReihenfolgeLosgroessenPlanung": "Sequence & Batch size planning"
   },
   "title": "Supply Chain Management",
   "Produktionsplanung": "Production Planning",
+  "Keine XML-Daten verfügbar": "no XML data",
   "Minutenplanung": "Minute Planning",
-  "KaufteilDisposition": "Purchased Parts Planning",
+  "KaufteilDisposition": "Purchased Parts Disposition",
   "Bezeichnung": "Description",
   "Typ": "Type",
   "Teil-Nr.": "Part No.",
@@ -94,7 +95,7 @@
     "Speichern": "Save"
   },
   "TeileProduktion": {
-    "Teileproduktion": "Parts Production",
+    "Teileproduktion": "Manufacturing Disposition",
     "Produktionsteil": "Production Part",
     "Aufträge": "Orders",
     "Aus Warteschlangen": "From Queues",
@@ -120,7 +121,7 @@
     "Konventionalstrafe": "Penalty",
     "Produktionsplan gespeichert": "Production plan saved successfully.",
     "Speichern": "Save",
-    "Verlaufswunsch":"Sales Demand",
+    "Verlaufswunsch": "Sales Demand",
     "Direktverkauf": "Direct Sales"
   }
 }
