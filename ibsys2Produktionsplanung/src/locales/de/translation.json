@@ -1,19 +1,24 @@
 {
   "Startseite": "Startseite",
   "Sprache ändern": "Sprache ändern",
-  "Ausgewählte Datei": "Ausgewählte Datei",
-  "Laden sie eine XML hoch": "Laden sie eine XML hoch",
+  "xmlDownload": "XML Herunterladen",
+  "fileinput": {
+    "upload": "Laden sie eine XML hoch",
+    "selectedFile": "Ausgewählte Datei",
+    "noFile": "Keine Datei ausgewählt",
+    "onlyXML": "Bitte laden sie eine XML Datei hoch"
+  },
   "navbar": {
     "title": "Lieferkettenmanagement",
     "Produktionsplanung": "Produktionsplanung",
     "Minutenplanung": "Kapazitätsplanung",
     "KaufteilDisposition": "Kaufteil-Disposition",
-    "TeileProduktion": "TeileProduktion"
+    "TeileProduktion": "TeileProduktion",
+    "ReihenfolgeLosgroessenPlanung": "Reihenfolge- & LosgroessenPlanung"
   },
   "Produktionsplanung": "Produktionsplanung",
   "Minutenplanung": "Minutenplanung",
   "KaufteilDisposition": "Kaufteil-Disposition",
-  "TeileProduktion": "TeileProduktion",
   "Bezeichnung": "Bezeichnung",
   "Typ": "Typ",
   "Teil-Nr.": "Teil-Nr.",
@@ -37,6 +42,7 @@
   "timeNeed": "Rückstandszeit",
   "Rüstzeit": "Rüstzeit",
   "Speichern": "Speichern",
+  "SpeichernSucess": "Bestellungen erfolgreich gespeichert.",
   "teil": {
     "hinterrad": "Hinterrad",
     "vorderrad": "Vorderrad",
@@ -50,5 +56,70 @@
     "rahmen_und_raeder": "Rahmen und Räder",
     "fahrrad_ohne_pedale": "Fahrrad ohne Pedale",
     "fahrrad_komplett": "Fahrrad komplett (cpl)"
+  },
+  "kaufteildispo": {
+    "title": "Kaufteildisposition",
+    "productionProgram": "Produktionsprogramm",
+    "bike": "Fahrrad",
+    "executedOrders": "Ausgeführte Bestellungen",
+    "purchasePart": "Kaufteil",
+    "deliveryTimeDays": "Lieferzeit in Tagen",
+    "deviationDays": "Abweichung in Tagen",
+    "stock": "Restbestand",
+    "totalDemand": "Gesamt Bedarf",
+    "order": "Bestelltyp",
+    "amount": "Menge",
+    "orderPeriod": "Bestell Periode",
+    "currentStockValue": "aktueller Lagerwert",
+    "newOrders": "Neue Bestellungen",
+    "usage": "Verwendung P1 / P2 / P3",
+    "periodDemand": "Bedarf Periode",
+    "discountAmount": "Diskontmenge",
+    "yearlyDemand": "Jahresbedarf/ Bestellkosten / Wert / Lagerkostensatz",
+    "optimalOrderQty": "Optimale Bestellmenge"
+  },
+  "NORMAL": "NORMAL",
+  "EIL": "EIL",
+  "KEINE": "KEINE",
+  "R&LPlanung": {
+    "Reihenfolge- & Losgrößenplanung": "Reihenfolge- & Losgrößenplanung",
+    "Aufträge zurücksetzen": "Aufträge zurücksetzen",
+    "Produktionsteil ID": "Produktionsteil ID",
+    "Menge": "Menge",
+    "Duplizieren": "Duplizieren",
+    "Entfernen": "Entfernen",
+    "Reihenfolge und Losgrößen erfolgreich gespeichert.": "Reihenfolge und Losgrößen erfolgreich gespeichert.",
+    "Neuen Auftrag hinzufügen": "Neuen Auftrag hinzufügen",
+    "Speichern": "Speichern"
+  },
+  "TeileProduktion": {
+    "Teileproduktion": "Teileproduktion",
+    "Produktionsteil": "Produktionsteil",
+    "Aufträge": "Aufträge",
+    "Aus Warteschlangen": "Aus Warteschlangen",
+    "Plan Restbestand": "Plan Restbestand",
+    "Restbestand": "Restbestand",
+    "Warteschlange": "Warteschlange",
+    "In Bearbeitung": "In Bearbeitung",
+    "Produktionsmenge": "Produktionsmenge",
+    "Eigenfertigprodukt Produktionsaufträge wurde erfolgreich gespeichert.": "Eigenfertigprodukt Produktionsaufträge wurde erfolgreich gespeichert.",
+    "Speichern": "Speichern"
+  },
+ "ProdPlanning": {
+    "Produktionsplanung": "Produktionsplanung",
+    "Prognose": "Prognose",
+    "Produkt": "Produkt",
+    "Period": "Periode",
+    "Anfangsbestand": "Anfangsbestand",
+    "Bestand": "Bestand",
+    "Geplante Produktionsmengen & Restbestände": "Geplante Produktionsmengen & Restbestände",
+    "Restbestand": "Restbestand",
+    "Verlaufswunsch und Direktverkauf": "Vertriebswunsch und Direktverkauf",
+    "Preis / Einheit": "Preis / Einheit",
+    "Konventionalstrafe": "Konventionalstrafe",
+    "Produktionsplan gespeichert": "Produktionsplan wurde erfolgreich gespeichert.",
+    "Speichern": "Speichern",
+    "Verlaufswunsch":"Vertriebswunsch",
+    "Direktverkauf": "Direktverkauf"
   }
 }

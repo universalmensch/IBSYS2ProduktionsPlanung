@@ -360,77 +360,72 @@ export function TeileProduktion() {
         }
     }
 
-    return (
-        <div>
-            <h1>Teileproduktion</h1>
-            <Table>
-                <thead>
-                <tr>
-                    <th>Produktionsteil</th>
-                    <th>Aufträge</th>
-                    <th>Aus Warteschlangen</th>
-                    <th>Plan Restbestand</th>
-                    <th>Restbestand</th>
-                    <th>Warteschlange</th>
-                    <th>In Bearbeitung</th>
-                    <th>Produktionsmenge</th>
+return (
+    <div>
+      <h1>{t('TeileProduktion.Teileproduktion')}</h1>
+      <Table>
+        <thead>
+          <tr>
+            <th>{t('TeileProduktion.Produktionsteil')}</th>
+            <th>{t('TeileProduktion.Aufträge')}</th>
+            <th>{t('TeileProduktion.Aus Warteschlangen')}</th>
+            <th>{t('TeileProduktion.Plan Restbestand')}</th>
+            <th>{t('TeileProduktion.Restbestand')}</th>
+            <th>{t('TeileProduktion.Warteschlange')}</th>
+            <th>{t('TeileProduktion.In Bearbeitung')}</th>
+            <th>{t('TeileProduktion.Produktionsmenge')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            AnzeigeReihenfolge.map(id => {
+              return <>
+                <tr key={id + 'vorne'} style={{ border: 'none' }}>
+                  {(id === 2 || id === 3) &&
+                    <td colSpan={2} style={{ padding: 0, height: '15px', border: 'none' }} />
+                  }
                 </tr>
-                </thead>
-                <tbody>
-                {
-                    AnzeigeReihenfolge.map(
-                        id => {
-                            return <>
-                                <tr key={id + 'vorne'} style={{border: 'none'}}>{
-                                    //extra space between the different bikes
-                                    (id === 2 || id === 3) &&
-                                    <td colSpan={2} style={{padding: 0, height: '15px', border: 'none'}}/>
+                <tr key={id + 'mitte'}>
+                  <td>{getOriginalId(id)}</td>
+                  <td>{produktionsteile[id].auftraege}</td>
+                  <td>+ {produktionsteile[id].fuerWarteschlangen}</td>
+                  <td>
+                    + <input
+                      min={0}
+                      disabled={id === 1 || id === 2 || id === 3}
+                      type="number"
+                      value={produktionsteile[id].planRestbestand}
+                      onChange={(e) => setAuftrag(id, Number(e.target.value))}
+                    />
+                  </td>
+                  <td>- {formatZahl(id, produktionsteile[id].restBestand)}</td>
+                  <td>- {formatZahl(id, produktionsteile[id].warteschlange)}</td>
+                  <td>- {formatZahl(id, produktionsteile[id].bearbeitung)}</td>
+                  <td>{formatZahl(id, produktionsteile[id].menge)}</td>
+                </tr>
+                <tr key={id + 'hinten'} style={{ border: 'none' }}>
+                  {(SpaceAfterRow.includes(id)) &&
+                    <td colSpan={2} style={{ padding: 0, height: '45px', border: 'none' }} />
+                  }
+                </tr>
+              </>;
+            })
+          }
+        </tbody>
+      </Table>
 
-                                }</tr>
-                                <tr key={id + 'mitte'}>
-                                    <td>{getOriginalId(id)}</td>
-                                    <td>{produktionsteile[id].auftraege}</td>
-                                    <td>+ {produktionsteile[id].fuerWarteschlangen}</td>
-                                    <td>
-                                        + <input
-                                        min={0}
-                                        disabled={id === 1 || id === 2 || id === 3}
-                                        type="number"
-                                        value={produktionsteile[id].planRestbestand}
-                                        onChange={(e) => setAuftrag(id, Number(e.target.value))}
-                                    />
-                                    </td>
-                                    <td>- {formatZahl(id, produktionsteile[id].restBestand)}</td>
-                                    <td>- {formatZahl(id, produktionsteile[id].warteschlange)}</td>
-                                    <td>- {formatZahl(id, produktionsteile[id].bearbeitung)}</td>
-                                    <td>{formatZahl(id, produktionsteile[id].menge)}</td>
-                                </tr>
-                                <tr key={id + 'hinten'} style={{border: 'none'}}>{
-                                    //extra spaces for the structure of the table
-                                    (SpaceAfterRow.includes(id)) &&
-                                    <td colSpan={2} style={{padding: 0, height: '45px', border: 'none'}}/>
+      <br />
 
-                                }</tr>
-                            </>;
-                        })
-                }
-                </tbody>
-            </Table>
-
-            <br/>
-
-            {speicherInfo && (
-                <div className="text-center mt-3">
-                    <div className="alert alert-primary" role="alert">
-                        Eigenfertigprodukt Produktionsaufträge wurde erfolgreich gespeichert.
-                    </div>
-                </div>
-            )}
-            <Button className="Button"
-                    onClick={save}
-            >
-                {t('Speichern')}
-            </Button>
+      {speicherInfo && (
+        <div className="text-center mt-3">
+          <div className="alert alert-primary" role="alert">
+            {t('TeileProduktion.Eigenfertigprodukt Produktionsaufträge wurde erfolgreich gespeichert.')}
+          </div>
         </div>
-    );
+      )}
+      <Button className="Button" onClick={save}>
+        {t('TeileProduktion.Speichern')}
+      </Button>
+    </div>
+  );
 }
