@@ -2,12 +2,12 @@ import {Button, Dropdown, DropdownButton, Table} from 'react-bootstrap';
 import {useGeneralStore} from '../helper/GeneralStoreContext';
 import {ProduktionsPlanDTO} from "../dtos/ProduktionsPlanDTO.tsx";
 import {Kaufteil, Kaufteile} from '../dtos/Kaufteile.tsx';
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {BestellTyp, BestellungDTO} from "../dtos/BestellungDTO.tsx";
 import {useTranslation} from "react-i18next";
 
 export function Kaufteildisposition() {
-    const {t} = useTranslation();
+    const {t, i18n} = useTranslation();
     const {generalStore, setGeneralStoreData} = useGeneralStore()
 
     const input = generalStore?.input?.results
@@ -28,6 +28,9 @@ export function Kaufteildisposition() {
     const [initialisierteKaufteile] = useState<Kaufteil[]>(initializeKaufteile());
     const [speicherInfo, setSpeicherInfo] = useState(false);
 
+    useEffect(()=> {
+
+    },[i18n.language])
     function initializeAlteBestellungen() {
         const result: BestellungDTO[] = [];
 
@@ -174,155 +177,156 @@ export function Kaufteildisposition() {
 
     return (
         <div>
-            <h1>Kaufteildisposition</h1>
+            <h1>{t('kaufteildispo.title')}</h1>
+
             <Table>
                 <thead>
-                <tr>
-                    <th>Produktionsprogramm</th>
-                </tr>
-                <tr>
-                    <th>Fahrrad</th>
-                    <th>Periode {periode}</th>
-                    <th>Periode {periode + 1}</th>
-                    <th>Periode {periode + 2}</th>
-                    <th>Periode {periode + 3}</th>
-                </tr>
+                    <tr>
+                        <th>{t('kaufteildispo.productionProgram')}</th>
+                    </tr>
+                    <tr>
+                        <th>{t('kaufteildispo.bike')}</th>
+                        <th>{t('kaufteildispo.periodDemand')} {periode}</th>
+                        <th>{t('kaufteildispo.periodDemand')} {periode + 1}</th>
+                        <th>{t('kaufteildispo.periodDemand')} {periode + 2}</th>
+                        <th>{t('kaufteildispo.periodDemand')} {periode + 3}</th>
+                    </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <th>P1</th>
-                    <th>{produktionsPlan.p1ProduktionWoche0}</th>
-                    <th>{produktionsPlan.p1ProduktionWoche1}</th>
-                    <th>{produktionsPlan.p1ProduktionWoche2}</th>
-                    <th>{produktionsPlan.p1ProduktionWoche3}</th>
-                </tr>
-                <tr>
-                    <th>P2</th>
-                    <th>{produktionsPlan.p2ProduktionWoche0}</th>
-                    <th>{produktionsPlan.p2ProduktionWoche1}</th>
-                    <th>{produktionsPlan.p2ProduktionWoche2}</th>
-                    <th>{produktionsPlan.p2ProduktionWoche3}</th>
-                </tr>
-                <tr>
-                    <th>P3</th>
-                    <th>{produktionsPlan.p3ProduktionWoche0}</th>
-                    <th>{produktionsPlan.p3ProduktionWoche1}</th>
-                    <th>{produktionsPlan.p3ProduktionWoche2}</th>
-                    <th>{produktionsPlan.p3ProduktionWoche3}</th>
-                </tr>
+                    <tr>
+                        <th>P1</th>
+                        <th>{produktionsPlan.p1ProduktionWoche0}</th>
+                        <th>{produktionsPlan.p1ProduktionWoche1}</th>
+                        <th>{produktionsPlan.p1ProduktionWoche2}</th>
+                        <th>{produktionsPlan.p1ProduktionWoche3}</th>
+                    </tr>
+                    <tr>
+                        <th>P2</th>
+                        <th>{produktionsPlan.p2ProduktionWoche0}</th>
+                        <th>{produktionsPlan.p2ProduktionWoche1}</th>
+                        <th>{produktionsPlan.p2ProduktionWoche2}</th>
+                        <th>{produktionsPlan.p2ProduktionWoche3}</th>
+                    </tr>
+                    <tr>
+                        <th>P3</th>
+                        <th>{produktionsPlan.p3ProduktionWoche0}</th>
+                        <th>{produktionsPlan.p3ProduktionWoche1}</th>
+                        <th>{produktionsPlan.p3ProduktionWoche2}</th>
+                        <th>{produktionsPlan.p3ProduktionWoche3}</th>
+                    </tr>
                 </tbody>
             </Table>
 
             <br/>
 
-            {
-                (orders !== undefined) && <Table>
+            {orders !== undefined && (
+                <Table>
                     <thead>
-                    <tr>
-                        <th>Ausgeführte Bestellungen</th>
-                    </tr>
-                    <tr>
-                        <th>Kaufteil</th>
-                        <th>Lieferzeit in Tagen</th>
-                        <th>Abweichung in Tagen</th>
-                        <th>Restbestand</th>
-                        <th>Gesamt Bedarf</th>
-                        <th>Bestellung</th>
-                        <th>Menge</th>
-                        <th>Bestell Periode</th>
-                    </tr>
+                        <tr>
+                            <th>{t('kaufteildispo.executedOrders')}</th>
+                        </tr>
+                        <tr>
+                            <th>{t('kaufteildispo.purchasePart')}</th>
+                            <th>{t('kaufteildispo.deliveryTimeDays')}</th>
+                            <th>{t('kaufteildispo.deviationDays')}</th>
+                            <th>{t('kaufteildispo.stock')}</th>
+                            <th>{t('kaufteildispo.totalDemand')}</th>
+                            <th>{t('kaufteildispo.order')}</th>
+                            <th>{t('kaufteildispo.amount')}</th>
+                            <th>{t('kaufteildispo.orderPeriod')}</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    { // for each bought item, the row of the table gets filled
-                        initialisierteKaufteile.map(kaufteil => {
+                        {initialisierteKaufteile.map(kaufteil => {
                             const id = kaufteil.id;
                             if (alteBestellungen[id] !== undefined) {
-                                return <tr key={id}>
-                                    <td>{id}</td>
-                                    <td>{kaufteil.lieferzeit}</td>
-                                    <td>{kaufteil.lieferzeitAbweichung}</td>
-                                    <td>{kaufteil.restbestandVorperiode}</td>
-                                    <td>{getGesamtBedarf(kaufteil)}</td>
-                                    <td><b>{alteBestellungen[id].typ}</b></td>
-                                    <td><b>{alteBestellungen[id].menge}</b></td>
-                                    <td>{alteBestellungen[id].bestellPeriode}</td>
-                                </tr>;
+                                return (
+                                    <tr key={id}>
+                                        <td>{id}</td>
+                                        <td>{kaufteil.lieferzeit}</td>
+                                        <td>{kaufteil.lieferzeitAbweichung}</td>
+                                        <td>{kaufteil.restbestandVorperiode}</td>
+                                        <td>{getGesamtBedarf(kaufteil)}</td>
+                                        <td><b>{alteBestellungen[id].typ}</b></td>
+                                        <td><b>{alteBestellungen[id].menge}</b></td>
+                                        <td>{alteBestellungen[id].bestellPeriode}</td>
+                                    </tr>
+                                );
                             }
-
-                        })
-                    }
+                        })}
                     </tbody>
                 </Table>
-            }
+            )}
 
             <br/>
-            <p>aktueller Lagerwert: {lagerWert.toFixed(2)} €</p>
+            <p>{t('kaufteildispo.currentStockValue')}: {lagerWert.toFixed(2)} €</p>
 
             <Table>
                 <thead>
-                <tr>
-                    <th>Neue Bestellungen</th>
-                </tr>
-                <tr>
-                    <th>Kaufteil</th>
-                    <th>Lieferzeit / Abweichung in Tagen</th>
-                    <th>Verwendung<br/>P1 / P2 / P3</th>
-                    <th>Restbestand</th>
-                    <th>Gesamt Bedarf</th>
-                    <th>Bedarf Periode<br/>{periode} / {periode + 1} / {periode + 2} / {periode + 3}</th>
-                    <th>Diskontmenge</th>
-                    <th>Jahresbedarf/ Bestellkosten /<br/>Wert / Lagerkostensatz</th>
-                    <th>Optimale Bestellmenge</th>
-                    <th>Bestellung</th>
-                    <th>Menge</th>
-                    <th>Bestell Periode</th>
-                </tr>
+                    <tr>
+                        <th>{t('kaufteildispo.newOrders')}</th>
+                    </tr>
+                    <tr>
+                        <th>{t('kaufteildispo.purchasePart')}</th>
+                        <th>{t('kaufteildispo.deliveryTimeDays')} / {t('kaufteildispo.deviationDays')}</th>
+                        <th>{t('kaufteildispo.usage')}</th>
+                        <th>{t('kaufteildispo.stock')}</th>
+                        <th>{t('kaufteildispo.totalDemand')}</th>
+                        <th>{t('kaufteildispo.periodDemand')}<br/>{periode} / {periode + 1} / {periode + 2} / {periode + 3}</th>
+                        <th>{t('kaufteildispo.discountAmount')}</th>
+                        <th>{t('kaufteildispo.yearlyDemand')}</th>
+                        <th>{t('kaufteildispo.optimalOrderQty')}</th>
+                        <th>{t('kaufteildispo.order')}</th>
+                        <th>{t('kaufteildispo.amount')}</th>
+                        <th>{t('kaufteildispo.orderPeriod')}</th>
+                    </tr>
                 </thead>
                 <tbody>
-                { // for each bought item, the row of the table gets filled
-                    initialisierteKaufteile.map(kaufteil => {
+                    {initialisierteKaufteile.map(kaufteil => {
                         const id = kaufteil.id;
-                        return <tr key={id}>
-                            <td>{id}</td>
-                            <td>{kaufteil.lieferzeit} / {kaufteil.lieferzeitAbweichung}</td>
-                            <td>{kaufteil.verwendungP1} / {kaufteil.verwendungP2} / {kaufteil.verwendungP3}</td>
-                            <td>{kaufteil.restbestandVorperiode}</td>
-                            <td>{getGesamtBedarf(kaufteil)}</td>
-                            <td>{getWochenBedarf(periode, kaufteil)} / {getWochenBedarf(periode + 1, kaufteil)} / {getWochenBedarf(periode + 2, kaufteil)} / {getWochenBedarf(periode + 3, kaufteil)}</td>
-                            <td>{kaufteil.diskontmenge}</td>
-                            <td>{getJahresBedarf(kaufteil)} / {kaufteil.bestellKosten * (bestellungen[id].typ === BestellTyp.EIL ? 10 : 1)}€
-                                / {kaufteil.wert}€
-                                / {(LAGER_KOSTEN_SATZ * 100).toFixed(2)}%
-                            </td>
-                            <td>{getOptimaleBestellmenge(kaufteil)}</td>
-                            <td><DropdownButton
-                                title={bestellungen[id].typ}
-                                size="sm"
-                            >
-                                {Object.values(BestellTyp).map((art) => (
-                                    <Dropdown.Item key={art}
-                                                   onClick={() => setBestellung(id, art, bestellungen[id].menge)}>
-                                        {art}
-                                    </Dropdown.Item>
-                                ))}
-                            </DropdownButton></td>
-                            <td>
-                                <input
-                                    min={0}
-                                    type="number"
-                                    value={bestellungen[id].menge}
-                                    onChange={(e) => {
-                                        // removes leading 0
-                                        // @ts-ignore
-                                        e.target.value = Math.abs(e.target.value);
-                                        setBestellung(id, bestellungen[id].typ, Number(e.target.value))
-                                    }}
-                                />
-                            </td>
-                            <td>{bestellungen[id].bestellPeriode}</td>
-                        </tr>;
-                    })
-                }
+                        return (
+                            <tr key={id}>
+                                <td>{id}</td>
+                                <td>{kaufteil.lieferzeit} / {kaufteil.lieferzeitAbweichung}</td>
+                                <td>{kaufteil.verwendungP1} / {kaufteil.verwendungP2} / {kaufteil.verwendungP3}</td>
+                                <td>{kaufteil.restbestandVorperiode}</td>
+                                <td>{getGesamtBedarf(kaufteil)}</td>
+                                <td>{getWochenBedarf(periode, kaufteil)} / {getWochenBedarf(periode + 1, kaufteil)} / {getWochenBedarf(periode + 2, kaufteil)} / {getWochenBedarf(periode + 3, kaufteil)}</td>
+                                <td>{kaufteil.diskontmenge}</td>
+                                <td>
+                                    {getJahresBedarf(kaufteil)} / {(kaufteil.bestellKosten * (bestellungen[id].typ === BestellTyp.EIL ? 10 : 1)).toFixed(2)}€
+                                    / {kaufteil.wert}€
+                                    / {(LAGER_KOSTEN_SATZ * 100).toFixed(2)}%
+                                </td>
+                                <td>{getOptimaleBestellmenge(kaufteil)}</td>
+                                <td>
+                                    <DropdownButton title={t(bestellungen[id].typ)} size="sm">
+                                        {Object.values(BestellTyp).map((art) => (
+                                            <Dropdown.Item
+                                                key={art}
+                                                onClick={() => setBestellung(id, art, bestellungen[id].menge)}
+                                            >
+                                                 {t(art)}
+                                            </Dropdown.Item>
+                                        ))}
+                                    </DropdownButton>
+                                </td>
+                                <td>
+                                    <input
+                                        min={0}
+                                        type="number"
+                                        value={bestellungen[id].menge}
+                                        onChange={(e) => {
+                                            // @ts-ignore
+                                            e.target.value = Math.abs(e.target.value);
+                                            setBestellung(id, bestellungen[id].typ, Number(e.target.value));
+                                        }}
+                                    />
+                                </td>
+                                <td>{bestellungen[id].bestellPeriode}</td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </Table>
 
@@ -330,7 +334,7 @@ export function Kaufteildisposition() {
             {speicherInfo && (
                 <div className="text-center mt-3">
                     <div className="alert alert-primary" role="alert">
-                        Bestellungen erfolgreich gespeichert.
+                        {t('SpeichernSucess')}
                     </div>
                 </div>
             )}

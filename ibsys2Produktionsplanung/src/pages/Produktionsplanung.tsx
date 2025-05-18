@@ -139,267 +139,275 @@ export function Produktionsplanung() {
         setTimeout(() => setSpeicherInfo(false), 3000);
     };
 
-    return (
-        <Container className="my-5">
-            <h1 className="text-center mb-4">Produktionsplanung</h1>
+return (
+    <Container className="my-5">
+      <h1 className="text-center mb-4">{t('ProdPlanning.Produktionsplanung')}</h1>
 
-            <section className="mb-5">
-                <h4>Prognose:</h4>
-                <Table bordered hover responsive className="mt-3">
-                    <thead>
-                    <tr>
-                        <th>Produkt</th>
-                        <th>Periode {startPeriode}</th>
-                        {[1, 2, 3].map((offset) => (
-                            <th key={offset}>Periode {startPeriode + offset}</th>
-                        ))}
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {(['p1', 'p2', 'p3'] as const).map((key, index) => (
-                        <tr key={key}>
-                            <td>Produkt {index + 1}</td>
-                            <td>
-                                <div style={{
-                                    width: '150px',
-                                    margin: '0 auto',
-                                    padding: '6px 0',
-                                    backgroundColor: '#f8f9fa',
-                                    border: '1px solid #ced4da',
-                                    borderRadius: '4px',
-                                    textAlign: 'center'
-                                }}>
-                                    {forecast[key]}
-                                </div>
-                            </td>
-                            {[0, 1, 2].map((i) => (
-                                <td key={i}>
-                                    <Form.Control
-                                        type="number"
-                                        min={0}
-                                        value={manuellePrognose[key][i]}
-                                        onChange={(e) => {
-                                            // removes leading 0
-                                            // @ts-ignore
-                                            e.target.value = Math.abs(e.target.value);
-                                            const value = Math.max(0, parseInt(e.target.value) || 0);
-                                            setManuellePrognose(prev => {
-                                                const updated = [...prev[key]];
-                                                updated[i] = value;
-                                                return {...prev, [key]: updated};
-                                            });
-                                        }}
-                                        style={{width: '150px', margin: '0 auto', textAlign: 'center'}}
-                                    />
-                                </td>
-                            ))}
-                        </tr>
-                    ))}
-                    </tbody>
-                </Table>
-            </section>
+      <section className="mb-5">
+        <h4>{t('ProdPlanning.Prognose')}:</h4>
+        <Table bordered hover responsive className="mt-3">
+          <thead>
+            <tr>
+              <th>{t('ProdPlanning.Produkt')}</th>
+              <th>{t('ProdPlanning.Period')} {startPeriode}</th>
+              {[1, 2, 3].map((offset) => (
+                <th key={offset}>{t('ProdPlanning.Period')} {startPeriode + offset}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {(['p1', 'p2', 'p3'] as const).map((key, index) => (
+              <tr key={key}>
+                <td>{t('ProdPlanning.Produkt')} {index + 1}</td>
+                <td>
+                  <div
+                    style={{
+                      width: '150px',
+                      margin: '0 auto',
+                      padding: '6px 0',
+                      backgroundColor: '#f8f9fa',
+                      border: '1px solid #ced4da',
+                      borderRadius: '4px',
+                      textAlign: 'center'
+                    }}
+                  >
+                    {forecast[key]}
+                  </div>
+                </td>
+                {[0, 1, 2].map((i) => (
+                  <td key={i}>
+                    <Form.Control
+                      type="number"
+                      min={0}
+                      value={manuellePrognose[key][i]}
+                      onChange={(e) => {
+                        // removes leading 0
+                        // @ts-ignore
+                        e.target.value = Math.abs(e.target.value);
+                        const value = Math.max(0, parseInt(e.target.value) || 0);
+                        setManuellePrognose((prev) => {
+                          const updated = [...prev[key]];
+                          updated[i] = value;
+                          return { ...prev, [key]: updated };
+                        });
+                      }}
+                      style={{ width: '150px', margin: '0 auto', textAlign: 'center' }}
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </section>
 
-            <section className="mb-5">
-                <h4>Anfangsbestand der Periode {startPeriode}:</h4>
-                <Table bordered className="mt-3 text-center align-middle" style={{maxWidth: '600px', margin: '0 auto'}}>
-                    <thead>
-                    <tr>
-                        <th>Produkt</th>
-                        <th>Bestand</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>Produkt 1</td>
-                        <td>{getRestbestand(1)}</td>
-                    </tr>
-                    <tr>
-                        <td>Produkt 2</td>
-                        <td>{getRestbestand(2)}</td>
-                    </tr>
-                    <tr>
-                        <td>Produkt 3</td>
-                        <td>{getRestbestand(3)}</td>
-                    </tr>
-                    </tbody>
-                </Table>
-            </section>
+      <section className="mb-5">
+        <h4>{t('ProdPlanning.Anfangsbestand')} {startPeriode}:</h4>
+        <Table
+          bordered
+          className="mt-3 text-center align-middle"
+          style={{ maxWidth: '600px', margin: '0 auto' }}
+        >
+          <thead>
+            <tr>
+              <th>{t('ProdPlanning.Produkt')}</th>
+              <th>{t('ProdPlanning.Bestand')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{t('ProdPlanning.Produkt')} 1</td>
+              <td>{getRestbestand(1)}</td>
+            </tr>
+            <tr>
+              <td>{t('ProdPlanning.Produkt')} 2</td>
+              <td>{getRestbestand(2)}</td>
+            </tr>
+            <tr>
+              <td>{t('ProdPlanning.Produkt')} 3</td>
+              <td>{getRestbestand(3)}</td>
+            </tr>
+          </tbody>
+        </Table>
+      </section>
 
-            <section className="mb-5">
-                <h4>Geplante Produktionsmengen & Restbestände:</h4>
-                <Table bordered hover responsive className="mt-3">
-                    <thead>
-                    <tr>
-                        <th>Produkt</th>
-                        {[0, 1, 2, 3].map(i => (
-                            <th key={i}>Periode {startPeriode + i}</th>
-                        ))}
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {(['p1', 'p2', 'p3'] as const).map((key, index) => {
-                        const restbestaende = berechneRestbestaende(key);
-                        return (
-                            <tr key={key}>
-                                <td>Produkt {index + 1}</td>
-                                {[0, 1, 2, 3].map((i) => (
-                                    <td key={i}>
-                                        <Form.Group className="text-center">
-                                            <Form.Control
-                                                type="number"
-                                                min={0}
-                                                value={manuelleProduktion[key][i]}
-                                                onChange={(e) => {
-                                                    // removes leading 0
-                                                    // @ts-ignore
-                                                    e.target.value = Math.abs(e.target.value);
-                                                    const value = Math.max(0, parseInt(e.target.value) || 0);
-                                                    setManuelleProduktion(prev => {
-                                                        const updated = [...prev[key]];
-                                                        updated[i] = value;
-                                                        return {...prev, [key]: updated};
-                                                    });
-                                                }}
-                                                style={{width: '150px', margin: '0 auto', textAlign: 'center'}}
-                                            />
-                                            <div style={{
-                                                fontSize: '0.9em',
-                                                color: restbestaende[i] < 0 ? 'red' : 'black',
-                                                fontWeight: 'bold',
-                                                marginTop: '4px'
-                                            }}>
-                                                Restbestand: {restbestaende[i]}
-                                            </div>
-                                        </Form.Group>
-                                    </td>
-                                ))}
-                            </tr>
-                        );
-                    })}
-                    </tbody>
-                </Table>
-            </section>
+      <section className="mb-5">
+        <h4>{t('ProdPlanning.Geplante Produktionsmengen & Restbestände')}:</h4>
+        <Table bordered hover responsive className="mt-3">
+          <thead>
+            <tr>
+              <th>{t('ProdPlanning.Produkt')}</th>
+              {[0, 1, 2, 3].map((i) => (
+                <th key={i}>{t('ProdPlanning.Period')} {startPeriode + i}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {(['p1', 'p2', 'p3'] as const).map((key, index) => {
+              const restbestaende = berechneRestbestaende(key);
+              return (
+                <tr key={key}>
+                  <td>{t('ProdPlanning.Produkt')} {index + 1}</td>
+                  {[0, 1, 2, 3].map((i) => (
+                    <td key={i}>
+                      <Form.Group className="text-center">
+                        <Form.Control
+                          type="number"
+                          min={0}
+                          value={manuelleProduktion[key][i]}
+                          onChange={(e) => {
+                            // removes leading 0
+                            // @ts-ignore
+                            e.target.value = Math.abs(e.target.value);
+                            const value = Math.max(0, parseInt(e.target.value) || 0);
+                            setManuelleProduktion((prev) => {
+                              const updated = [...prev[key]];
+                              updated[i] = value;
+                              return { ...prev, [key]: updated };
+                            });
+                          }}
+                          style={{ width: '150px', margin: '0 auto', textAlign: 'center' }}
+                        />
+                        <div
+                          style={{
+                            fontSize: '0.9em',
+                            color: restbestaende[i] < 0 ? 'red' : 'black',
+                            fontWeight: 'bold',
+                            marginTop: '4px'
+                          }}
+                        >
+                          {t('ProdPlanning.Restbestand')}: {restbestaende[i]}
+                        </div>
+                      </Form.Group>
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
+      </section>
 
-            <section className="mb-5">
-                <h4>Vertriebswunsch und Direktverkauf:</h4>
-                <Table bordered hover responsive className="mt-3">
-                    <thead>
-                    <tr>
-                        <th>Produkt</th>
-                        <th>Vertriebswunsch</th>
-                        <th>Direktverkauf</th>
-                        <th>Preis / Einheit</th>
-                        <th>Konventionalstrafe</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {(['p1', 'p2', 'p3'] as const).map((key, index) => {
-                        return (
-                            <tr key={key}>
-                                <td>Produkt {index + 1}</td>
-                                <td>
-                                    <Form.Group className="text-center">
-                                        <Form.Control
-                                            type="number"
-                                            min={0}
-                                            value={vertriebswunsch["forecast"][key]}
-                                            disabled
-                                            style={{width: '150px', margin: '0 auto', textAlign: 'center'}}
-                                        />
-                                    </Form.Group>
-                                </td>
-                                <td>
-                                    <Form.Group className="text-center">
-                                        <Form.Control
-                                            type="number"
-                                            min={0}
-                                            value={vertriebswunsch["direktverkauf"][key]}
-                                            onChange={(e) => {
-                                                // removes leading 0
-                                                // @ts-ignore
-                                                e.target.value = Math.abs(e.target.value);
-                                                const value = Math.max(0, parseInt(e.target.value) || 0);
-                                                setVertriebswunsch(prev => {
-                                                    return {
-                                                        ...prev,
-                                                        direktverkauf: {
-                                                            ...prev["direktverkauf"],
-                                                            [key]: value
-                                                        }
-                                                    };
-                                                });
-                                            }}
-                                            style={{width: '150px', margin: '0 auto', textAlign: 'center'}}
-                                        />
-                                    </Form.Group>
-                                </td>
-                                <td>
-                                    <Form.Group className="text-center">
-                                        <Form.Control
-                                            type="number"
-                                            min={0}
-                                            value={vertriebswunsch["preis"][key]}
-                                            onChange={(e) => {
-                                                // removes leading 0
-                                                // @ts-ignore
-                                                e.target.value = Math.abs(e.target.value);
-                                                const value = Math.max(0, parseInt(e.target.value) || 0);
-                                                setVertriebswunsch(prev => {
-                                                    return {
-                                                        ...prev,
-                                                        preis: {
-                                                            ...prev["preis"],
-                                                            [key]: value
-                                                        }
-                                                    };
-                                                });
-                                            }}
-                                            style={{width: '150px', margin: '0 auto', textAlign: 'center'}}
-                                        />
-                                    </Form.Group>
-                                </td>
-                                <td>
-                                    <Form.Group className="text-center">
-                                        <Form.Control
-                                            type="number"
-                                            min={0}
-                                            value={vertriebswunsch["konventionalStrafe"][key]}
-                                            onChange={(e) => {
-                                                // removes leading 0
-                                                // @ts-ignore
-                                                e.target.value = Math.abs(e.target.value);
-                                                const value = Math.max(0, parseInt(e.target.value) || 0);
-                                                setVertriebswunsch(prev => {
-                                                    return {
-                                                        ...prev,
-                                                        konventionalStrafe: {
-                                                            ...prev["konventionalStrafe"],
-                                                            [key]: value
-                                                        }
-                                                    };
-                                                });
-                                            }}
-                                            style={{width: '150px', margin: '0 auto', textAlign: 'center'}}
-                                        />
-                                    </Form.Group>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                    </tbody>
-                </Table>
-            </section>
+      <section className="mb-5">
+        <h4>{t('ProdPlanning.Verlaufswunsch und Direktverkauf')}:</h4>
+        <Table bordered hover responsive className="mt-3">
+          <thead>
+            <tr>
+              <th>{t('ProdPlanning.Produkt')}</th>
+              <th>{t('ProdPlanning.Verlaufswunsch')}</th>
+              <th>{t('ProdPlanning.Direktverkauf')}</th>
+              <th>{t('ProdPlanning.Preis / Einheit')}</th>
+              <th>{t('ProdPlanning.Konventionalstrafe')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(['p1', 'p2', 'p3'] as const).map((key, index) => {
+              return (
+                <tr key={key}>
+                  <td>{t('ProdPlanning.Produkt')} {index + 1}</td>
+                  <td>
+                    <Form.Group className="text-center">
+                      <Form.Control
+                        type="number"
+                        min={0}
+                        value={vertriebswunsch["forecast"][key]}
+                        disabled
+                        style={{ width: '150px', margin: '0 auto', textAlign: 'center' }}
+                      />
+                    </Form.Group>
+                  </td>
+                  <td>
+                    <Form.Group className="text-center">
+                      <Form.Control
+                        type="number"
+                        min={0}
+                        value={vertriebswunsch["direktverkauf"][key]}
+                        onChange={(e) => {
+                          // removes leading 0
+                          // @ts-ignore
+                          e.target.value = Math.abs(e.target.value);
+                          const value = Math.max(0, parseInt(e.target.value) || 0);
+                          setVertriebswunsch((prev) => {
+                            return {
+                              ...prev,
+                              direktverkauf: {
+                                ...prev["direktverkauf"],
+                                [key]: value
+                              }
+                            };
+                          });
+                        }}
+                        style={{ width: '150px', margin: '0 auto', textAlign: 'center' }}
+                      />
+                    </Form.Group>
+                  </td>
+                  <td>
+                    <Form.Group className="text-center">
+                      <Form.Control
+                        type="number"
+                        min={0}
+                        value={vertriebswunsch["preis"][key]}
+                        onChange={(e) => {
+                          // removes leading 0
+                          // @ts-ignore
+                          e.target.value = Math.abs(e.target.value);
+                          const value = Math.max(0, parseInt(e.target.value) || 0);
+                          setVertriebswunsch((prev) => {
+                            return {
+                              ...prev,
+                              preis: {
+                                ...prev["preis"],
+                                [key]: value
+                              }
+                            };
+                          });
+                        }}
+                        style={{ width: '150px', margin: '0 auto', textAlign: 'center' }}
+                      />
+                    </Form.Group>
+                  </td>
+                  <td>
+                    <Form.Group className="text-center">
+                      <Form.Control
+                        type="number"
+                        min={0}
+                        value={vertriebswunsch["konventionalStrafe"][key]}
+                        onChange={(e) => {
+                          // removes leading 0
+                          // @ts-ignore
+                          e.target.value = Math.abs(e.target.value);
+                          const value = Math.max(0, parseInt(e.target.value) || 0);
+                          setVertriebswunsch((prev) => {
+                            return {
+                              ...prev,
+                              konventionalStrafe: {
+                                ...prev["konventionalStrafe"],
+                                [key]: value
+                              }
+                            };
+                          });
+                        }}
+                        style={{ width: '150px', margin: '0 auto', textAlign: 'center' }}
+                      />
+                    </Form.Group>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
+      </section>
 
-            {speicherInfo && (
-                <div className="text-center mt-3">
-                    <div className="alert alert-primary" role="alert">
-                        Produktionsplan wurde erfolgreich gespeichert.
-                    </div>
-                </div>
-            )}
-            <div className="text-center mt-3">
-                <Button variant="primary" onClick={handlePlanErstellen}>{t('Speichern')}</Button>
-            </div>
-        </Container>
-    );
+      {speicherInfo && (
+        <div className="text-center mt-3">
+          <div className="alert alert-primary" role="alert">
+            {t('ProdPlanning.Produktionsplan gespeichert')}
+          </div>
+        </div>
+      )}
+      <div className="text-center mt-3">
+        <Button variant="primary" onClick={handlePlanErstellen}>{t('ProdPlanning.Speichern')}</Button>
+      </div>
+    </Container>
+  );
 }

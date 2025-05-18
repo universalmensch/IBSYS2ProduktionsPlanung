@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {useGeneralStore} from '../helper/GeneralStoreContext';
 
@@ -7,9 +7,13 @@ import { useTranslation } from 'react-i18next';
 
 
 const FileInput: React.FC = () => {
-    const [fileName, setFileName] = useState<string>('No file selected');
     const {generalStore, setGeneralStoreData} = useGeneralStore();
-    const {t} = useTranslation()
+    const {t, i18n} = useTranslation()
+    const [fileName, setFileName] = useState<string>(t('fileinput.noFile'));
+    
+    useEffect(()=> {
+        setFileName(t('fileinput.noFile'));
+    },[i18n.language])
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -17,13 +21,12 @@ const FileInput: React.FC = () => {
             if (file.type === 'application/xml' || file.name.endsWith('.xml')) {
                 setFileName(file.name);
                 parseXML(file);
-                console.log(file)
             } else {
-                setFileName('Please select an XML file');
+                setFileName(t('fileinput.onlyXML'));
                 event.target.value = '';
             }
         } else {
-            setFileName('No file selected');
+            setFileName(t('fileinput.noFile'));
         }
     };
 
@@ -42,7 +45,7 @@ const FileInput: React.FC = () => {
     return (
         <>
             <label htmlFor="fileInput" className="btn btn-primary btn-lg">
-                {t("Laden sie eine XML hoch")}
+                {t("fileinput.upload")}
                 <input
                     type="file"
                     id="fileInput"
@@ -51,7 +54,7 @@ const FileInput: React.FC = () => {
                     onChange={handleFileChange}
                 />
             </label>
-            <p className="mt-3 text-muted">{`${t('Ausgewählte Datei')}: ${fileName}`}</p>
+            <p className="mt-3 text-muted">{`${t('fileinput.selectedFile')}: ${fileName}`}</p>
         </>
     );
 };

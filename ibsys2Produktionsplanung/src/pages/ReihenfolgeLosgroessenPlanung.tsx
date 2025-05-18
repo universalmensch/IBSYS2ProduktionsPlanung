@@ -101,93 +101,89 @@ export function ReihenfolgeLosgroessenPlanung() {
 
     return (
         <div className="p-4">
-            <h4>Reihenfolge- & Losgrößenplanung</h4>
-            <br/>
-            <Button onClick={resetProduktionsAuftraege} variant="danger">
-                Aufträge zurücksetzen
+        <h4>{t('R&LPlanung.Reihenfolge- & Losgrößenplanung')}</h4>
+        <br />
+        <Button onClick={resetProduktionsAuftraege} variant="danger">
+            {t('R&LPlanung.Aufträge zurücksetzen')}
+        </Button>
+        <br />
+        <br />
+        {auftraege.map((auftrag, index) => (
+            <Card key={index + "key"} className="mb-3">
+            <Card.Body>
+                <Row className="align-items-end">
+                <Col md={3}>
+                    <Form.Group controlId={`kaufteilID-${index}`}>
+                    <Form.Label>{t('R&LPlanung.Produktionsteil ID')}</Form.Label>
+                    <Form.Control
+                        type="number"
+                        value={auftrag.kaufteilID}
+                        min={0}
+                        onChange={(e) => {
+                        // @ts-ignore
+                        e.target.value = Math.abs(e.target.value);
+                        updateAuftrag(index, 'kaufteilID', Number(e.target.value));
+                        }}
+                    />
+                    </Form.Group>
+                </Col>
+                <Col md={3}>
+                    <Form.Group controlId={`menge-${index}`}>
+                    <Form.Label>{t('R&LPlanung.Menge')}</Form.Label>
+                    <Form.Control
+                        type="number"
+                        value={auftrag.menge}
+                        min={0}
+                        onChange={(e) => {
+                        // @ts-ignore
+                        e.target.value = Math.abs(e.target.value);
+                        updateAuftrag(index, 'menge', Number(e.target.value));
+                        }}
+                    />
+                    </Form.Group>
+                </Col>
+                <Col md={6} className="text-end">
+                    {index !== 0 && (
+                    <Button variant="secondary" onClick={() => moveUp(index)} className="me-2">
+                        ↑
+                    </Button>
+                    )}
+                    {index !== auftraege.length - 1 && (
+                    <Button variant="secondary" onClick={() => moveDown(index)} className="me-2">
+                        ↓
+                    </Button>
+                    )}
+                    <Button variant="warning" onClick={() => duplicateAuftrag(index)} className="me-2">
+                    {t('R&LPlanung.Duplizieren')}
+                    </Button>
+                    <Button variant="danger" onClick={() => removeAuftrag(index)}>
+                    {t('R&LPlanung.Entfernen')}
+                    </Button>
+                </Col>
+                </Row>
+            </Card.Body>
+            </Card>
+        ))}
+        <br />
+        {speicherInfo && (
+            <div className="text-center mt-3">
+            <div className="alert alert-primary" role="alert">
+                {t('R&LPlanung.Reihenfolge und Losgrößen erfolgreich gespeichert.')}
+            </div>
+            </div>
+        )}
+        <Row className="align-items-end">
+            <Col md={6}>
+            <Button onClick={addAuftrag} variant="primary">
+                {t('R&LPlanung.Neuen Auftrag hinzufügen')}
             </Button>
-            <br/>
-            <br/>
-            {auftraege.map((auftrag, index) => (
-                <Card key={index + "key"} className="mb-3">
-                    <Card.Body>
-                        <Row className="align-items-end">
-                            <Col md={3}>
-                                <Form.Group controlId={`kaufteilID-${index}`}>
-                                    <Form.Label>Produktionsteil ID</Form.Label>
-                                    <Form.Control
-                                        type="number"
-                                        value={auftrag.kaufteilID}
-                                        min={0}
-
-                                        onChange={(e) => {
-                                            // removes leading 0
-                                            // @ts-ignore
-                                            e.target.value = Math.abs(e.target.value);
-                                            updateAuftrag(index, 'kaufteilID', Number(e.target.value));
-                                        }}
-                                    />
-                                </Form.Group>
-                            </Col>
-                            <Col md={3}>
-                                <Form.Group controlId={`menge-${index}`}>
-                                    <Form.Label>Menge</Form.Label>
-                                    <Form.Control
-                                        type="number"
-                                        value={auftrag.menge}
-                                        min={0}
-
-                                        onChange={(e) => {
-                                            // removes leading 0
-                                            // @ts-ignore
-                                            e.target.value = Math.abs(e.target.value);
-                                            updateAuftrag(index, 'menge', Number(e.target.value));
-                                        }}
-                                    />
-                                </Form.Group>
-                            </Col>
-                            <Col md={6} className="text-end">
-                                {index !== 0 &&
-                                    <Button variant="secondary" onClick={() => moveUp(index)} className="me-2">
-                                        ↑
-                                    </Button>
-                                }
-                                {index !== auftraege.length - 1 &&
-                                    <Button variant="secondary" onClick={() => moveDown(index)} className="me-2">
-                                        ↓
-                                    </Button>
-                                }
-                                <Button variant="warning" onClick={() => duplicateAuftrag(index)} className="me-2">
-                                    Duplizieren
-                                </Button>
-                                <Button variant="danger" onClick={() => removeAuftrag(index)}>
-                                    Entfernen
-                                </Button>
-                            </Col>
-                        </Row>
-                    </Card.Body>
-                </Card>
-            ))}
-            <br/>
-            {speicherInfo && (
-                <div className="text-center mt-3">
-                    <div className="alert alert-primary" role="alert">
-                        Reihenfolge und Losgrößen erfolgreich gespeichert.
-                    </div>
-                </div>
-            )}
-            <Row className="align-items-end">
-                <Col md={6}>
-                    <Button onClick={addAuftrag} variant="primary">
-                        Neuen Auftrag hinzufügen
-                    </Button>
-                </Col>
-                <Col md={6}>
-                    <Button onClick={save} variant="primary">
-                        {t('Speichern')}
-                    </Button>
-                </Col>
-            </Row>
+            </Col>
+            <Col md={6}>
+            <Button onClick={save} variant="primary">
+                {t('R&LPlanung.Speichern')}
+            </Button>
+            </Col>
+        </Row>
         </div>
     );
 }

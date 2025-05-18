@@ -1,20 +1,25 @@
 {
   "Startseite": "Welcome Page",
   "Sprache ändern": "Change Language",
-  "Ausgewählte Datei": "Selected file",
-  "Laden sie eine XML hoch": "Upload an XML",
+  "xmlDownload": "Download XML",
+  "fileinput": {
+    "upload": "Upload an XML",
+    "selectedFile": "Selected file",
+    "noFile": "No File selected",
+     "onlyXML": "Please upload an XML"
+  },
   "navbar": {
     "title": "Supply Chain Management",
     "Produktionsplanung": "Production Planning",
     "Minutenplanung": "Minute Planning",
     "KaufteilDisposition": "Purchased Parts Planning",
-    "TeileProduktion": "Parts production"
+    "TeileProduktion": "Parts production",
+    "ReihenfolgeLosgroessenPlanung": "Sequence & lot size planning"
   },
   "title": "Supply Chain Management",
   "Produktionsplanung": "Production Planning",
   "Minutenplanung": "Minute Planning",
   "KaufteilDisposition": "Purchased Parts Planning",
-  "TeileProduktion": "Parts production",
   "Bezeichnung": "Description",
   "Typ": "Type",
   "Teil-Nr.": "Part No.",
@@ -38,6 +43,7 @@
   "timeNeed": "Timeneed",
   "Rüstzeit": "Setup Time",
   "Speichern": "Save",
+  "SpeichernSucess": "Orders successfully saved",
   "teil": {
     "hinterrad": "Rear Wheel",
     "vorderrad": "Front Wheel",
@@ -51,5 +57,70 @@
     "rahmen_und_raeder": "Frame and Wheels",
     "fahrrad_ohne_pedale": "Bicycle without Pedals",
     "fahrrad_komplett": "Complete Bicycle (cpl)"
+  },
+  "kaufteildispo": {
+    "title": "Procurement of Purchased Parts",
+    "productionProgram": "Production Program",
+    "bike": "Bike",
+    "executedOrders": "Executed Orders",
+    "purchasePart": "Purchase Part",
+    "deliveryTimeDays": "Delivery Time (days)",
+    "deviationDays": "Deviation (days)",
+    "stock": "Stock",
+    "totalDemand": "Total Demand",
+    "order": "Ordertype",
+    "amount": "Amount",
+    "orderPeriod": "Order Period",
+    "currentStockValue": "Current Stock Value",
+    "newOrders": "New Orders",
+    "usage": "Usage P1 / P2 / P3",
+    "periodDemand": "Period Demand",
+    "discountAmount": "Discount Amount",
+    "yearlyDemand": "Yearly Demand / Order Costs / Value / Stock Cost Rate",
+    "optimalOrderQty": "Optimal Order Quantity"
+  },
+  "NORMAL": "STANDARD",
+  "EIL": "EXPRESS",
+  "KEINE": "NONE",
+  "R&LPlanung": {
+    "Reihenfolge- & Losgrößenplanung": "Sequence & Batch Size Planning",
+    "Aufträge zurücksetzen": "Reset Orders",
+    "Produktionsteil ID": "Production Part ID",
+    "Menge": "Quantity",
+    "Duplizieren": "Duplicate",
+    "Entfernen": "Remove",
+    "Reihenfolge und Losgrößen erfolgreich gespeichert.": "Sequence and batch sizes saved successfully.",
+    "Neuen Auftrag hinzufügen": "Add New Order",
+    "Speichern": "Save"
+  },
+  "TeileProduktion": {
+    "Teileproduktion": "Parts Production",
+    "Produktionsteil": "Production Part",
+    "Aufträge": "Orders",
+    "Aus Warteschlangen": "From Queues",
+    "Plan Restbestand": "Planned Remaining Stock",
+    "Restbestand": "Remaining Stock",
+    "Warteschlange": "Queue",
+    "In Bearbeitung": "In Progress",
+    "Produktionsmenge": "Production Quantity",
+    "Eigenfertigprodukt Produktionsaufträge wurde erfolgreich gespeichert.": "Production orders have been successfully saved.",
+    "Speichern": "Save"
+  },
+  "ProdPlanning": {
+    "Produktionsplanung": "Production Planning",
+    "Prognose": "Forecast",
+    "Produkt": "Product",
+    "Period": "Period",
+    "Anfangsbestand": "Initial Stock",
+    "Bestand": "Stock",
+    "Geplante Produktionsmengen & Restbestände": "Planned Production Quantities & Remaining Stocks",
+    "Restbestand": "Remaining Stock",
+    "Verlaufswunsch und Direktverkauf": "Sales Demand and Direct Sales",
+    "Preis / Einheit": "Price per Unit",
+    "Konventionalstrafe": "Penalty",
+    "Produktionsplan gespeichert": "Production plan saved successfully.",
+    "Speichern": "Save",
+    "Verlaufswunsch":"Sales Demand",
+    "Direktverkauf": "Direct Sales"
   }
 }

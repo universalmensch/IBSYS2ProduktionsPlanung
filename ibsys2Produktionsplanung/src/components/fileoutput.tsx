@@ -1,8 +1,10 @@
 import { XMLBuilder } from "fast-xml-parser";
 import { XMLOutput } from '../dtos/XMLOutput';
 import { Button } from "react-bootstrap";
+import { useTranslation } from "react-i18next";
 
 const DownloadXmlButton = ( jsonData: XMLOutput | undefined) => {
+  const {t} = useTranslation()
   const handleDownload = () => {
     const builder = new XMLBuilder({
       format: true, 
@@ -24,7 +26,7 @@ const DownloadXmlButton = ( jsonData: XMLOutput | undefined) => {
     URL.revokeObjectURL(url);
   };
 
-  return jsonData && Object.keys(jsonData).length > 0 && <Button onClick={handleDownload}>XML Download</Button>;
+  return jsonData && Object.keys(jsonData).length > 0 && <Button onClick={handleDownload}>{`${t('xmlDownload')}`}</Button>;
 };
 
 export default DownloadXmlButton;
