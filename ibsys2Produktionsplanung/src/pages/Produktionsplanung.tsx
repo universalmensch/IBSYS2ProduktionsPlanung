@@ -373,10 +373,11 @@ export function Produktionsplanung() {
                                             min={0}
                                             value={vertriebswunsch["konventionalStrafe"][key]}
                                             onChange={(e) => {
-                                                // removes leading 0
+                                                // Removes leading 0
                                                 // @ts-ignore
                                                 e.target.value = Math.abs(e.target.value);
-                                                const value = Math.max(0, parseInt(e.target.value) || 0);
+                                                const input = e.target.value.replace(",", ".");
+                                                const value = Math.max(0, parseFloat(input) || 0);
                                                 setVertriebswunsch((prev) => {
                                                     return {
                                                         ...prev,
