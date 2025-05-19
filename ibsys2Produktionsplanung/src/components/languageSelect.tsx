@@ -10,7 +10,7 @@ const LANGUAGES = [
 ];
 
 const LanguageSelect = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const currentLang = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0];
 
