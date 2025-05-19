@@ -11,7 +11,7 @@
   "navbar": {
     "title": "Supply Chain Management",
     "Produktionsplanung": "Production Planning",
-    "Minutenplanung": "Minute Planning",
+    "Minutenplanung": "Capcity Planning",
     "KaufteilDisposition": "Purchased Parts Planning",
     "TeileProduktion": "Manufacturing Disposition",
     "ReihenfolgeLosgroessenPlanung": "Sequence & Batch size planning"
@@ -19,7 +19,7 @@
   "title": "Supply Chain Management",
   "Produktionsplanung": "Production Planning",
   "Keine XML-Daten verfügbar": "no XML data",
-  "Minutenplanung": "Minute Planning",
+  "Minutenplanung": "Capacity Planning",
   "KaufteilDisposition": "Purchased Parts Disposition",
   "Bezeichnung": "Description",
   "Typ": "Type",

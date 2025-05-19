@@ -6,10 +6,11 @@ import { Button } from 'react-bootstrap';
 const LANGUAGES = [
   { code: 'en', label: 'English', flag: 'https://flagcdn.com/w320/us.png' },
   { code: 'de', label: 'Deutsch', flag: 'https://flagcdn.com/w320/de.png' },
+  { code: 'vi', label: 'Tiếng Việt', flag: 'https://flagcdn.com/w320/vn.png' }
 ];
 
 const LanguageSelect = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   const currentLang = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0];
 
@@ -17,7 +18,7 @@ const LanguageSelect = () => {
     i18n.changeLanguage(langCode);
     setOpen(false); 
   };
-
+  console.log(i18n.language)
   return (
     <div className="lang-select-wrapper" style={{ position: 'relative', display: 'inline-block', justifyContent: 'end'}}>
       <Button
