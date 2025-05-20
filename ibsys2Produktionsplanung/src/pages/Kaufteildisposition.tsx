@@ -366,7 +366,7 @@ export function Kaufteildisposition() {
                                 / {kaufteil.wert}€
                                 / {(LAGER_KOSTEN_SATZ * 100).toFixed(2)}%
                             </td>
-                            <td>{getOptimaleBestellmenge(kaufteil)}</td>
+                            <td>{bestellung?.typ == BestellTyp.EIL ? getOptimaleBestellmengeEil(kaufteil) : getOptimaleBestellmenge(kaufteil)}</td>
                             {/* Bestellung controls */}
                             <td>
                                 {bestellung && (
