@@ -92,6 +92,6 @@ export const Ruestzeiten: Ruestzeit[] = [
     new Ruestzeit(56, 3, 20),
     new Ruestzeit(31, 3, 20),
     new Ruestzeit(1, 4, 30),
-    new Ruestzeit(1, 4, 20),
-    new Ruestzeit(1, 4, 30),
+    new Ruestzeit(2, 4, 20),
+    new Ruestzeit(3, 4, 30),
 ];
