@@ -29,10 +29,6 @@ export function Kaufteildisposition() {
     const [speicherInfo, setSpeicherInfo] = useState(false);
 
     useEffect(() => {
-        console.log('bestellung');
-    }, [bestellungen])
-
-    useEffect(() => {
 
     }, [i18n.language])
 
