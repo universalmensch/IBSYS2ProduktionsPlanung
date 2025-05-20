@@ -28,9 +28,10 @@ export function Kaufteildisposition() {
     const [initialisierteKaufteile] = useState<Kaufteil[]>(initializeKaufteile());
     const [speicherInfo, setSpeicherInfo] = useState(false);
 
-    useEffect(()=> {
+    useEffect(() => {
 
-    },[i18n.language])
+    }, [i18n.language])
+
     function initializeAlteBestellungen() {
         const result: BestellungDTO[] = [];
 
@@ -125,7 +126,11 @@ export function Kaufteildisposition() {
     }
 
     function getOptimaleBestellmenge(kaufteil: Kaufteil) {
-        return Math.ceil(Math.sqrt((2 * getJahresBedarf(kaufteil) * kaufteil.bestellKosten * (bestellungen[kaufteil.id].typ === BestellTyp.EIL ? 10 : 1)) / (kaufteil.wert * LAGER_KOSTEN_SATZ)));
+        return Math.ceil(Math.sqrt((2 * getJahresBedarf(kaufteil) * kaufteil.bestellKosten) / (kaufteil.wert * LAGER_KOSTEN_SATZ)));
+    }
+
+    function getOptimaleBestellmengeEil(kaufteil: Kaufteil) {
+        return Math.ceil(Math.sqrt((2 * getJahresBedarf(kaufteil) * kaufteil.bestellKosten * 10) / (kaufteil.wert * LAGER_KOSTEN_SATZ)));
     }
 
     function getGesamtBedarf(kaufteil: Kaufteil) {
@@ -176,52 +181,51 @@ export function Kaufteildisposition() {
     }
 
     function checkWhenRestbestandExhausted(periode: number, kaufteil: Kaufteil) {
-       
-    let restbestandKaufteil = Number(kaufteil.restbestandVorperiode);  // Initial stock
-    let weeks = [0, 1, 2, 3];  // Weeks we need to check (Woche 1, Woche 2, Woche 3, Woche 4)
-    let bedarf = [
-        getWochenBedarf(periode, kaufteil),  // Week 1 demand
-        getWochenBedarf(periode + 1, kaufteil),  // Week 2 demand
-        getWochenBedarf(periode + 2, kaufteil),  // Week 3 demand
-        getWochenBedarf(periode + 3, kaufteil),  // Week 4 demand
-    ];
 
-    let futureinwardOrder = orders?.find(o => Number(o.article) === kaufteil.id)
-    if(futureinwardOrder) {
-        let eilabzug = futureinwardOrder.mode == 4 ? 2 : 1
-        let futureinwardwhen = Math.ceil((futureinwardOrder.orderperiod - periode) + ((kaufteil.lieferzeit + kaufteil.lieferzeitAbweichung) / 5) / eilabzug)
-        bedarf[futureinwardwhen] -= futureinwardOrder.amount;
-    }    
+        let restbestandKaufteil = Number(kaufteil.restbestandVorperiode);  // Initial stock
+        const weeks = [0, 1, 2, 3];  // Weeks we need to check (Woche 1, Woche 2, Woche 3, Woche 4)
+        const bedarf = [
+            getWochenBedarf(periode, kaufteil),  // Week 1 demand
+            getWochenBedarf(periode + 1, kaufteil),  // Week 2 demand
+            getWochenBedarf(periode + 2, kaufteil),  // Week 3 demand
+            getWochenBedarf(periode + 3, kaufteil),  // Week 4 demand
+        ];
 
-    // Loop over each week
-    for (let i = 0; i < weeks.length; i++) {
-         if(bedarf[i] === 0) {
-            return 5;
+        const futureinwardOrder = orders?.find(o => Number(o.article) === kaufteil.id)
+        if (futureinwardOrder) {
+            const eilabzug = futureinwardOrder.mode == 4 ? 2 : 1
+            const futureinwardwhen = Math.ceil((futureinwardOrder.orderperiod - periode) + ((kaufteil.lieferzeit + kaufteil.lieferzeitAbweichung) / 5) / eilabzug)
+            bedarf[futureinwardwhen] -= futureinwardOrder.amount;
         }
-        restbestandKaufteil -= bedarf[i];  // Subtract demand for that week
 
-        // Check if stock is exhausted
-        if (restbestandKaufteil <= 0) {
-            return weeks[i] + 1;  // Return the week when the stock runs out (1-based)
+        // Loop over each week
+        for (let i = 0; i < weeks.length; i++) {
+            if (bedarf[i] === 0) {
+                return 5;
+            }
+            restbestandKaufteil -= bedarf[i];  // Subtract demand for that week
+
+            // Check if stock is exhausted
+            if (restbestandKaufteil <= 0) {
+                return weeks[i] + 1;  // Return the week when the stock runs out (1-based)
+            }
         }
+
+        return 5;  // If stock doesn't run out within 4 weeks
     }
 
-    return 5;  // If stock doesn't run out within 4 weeks
-    }
-
-    function optimizeOrders(){
-        let optimizedOrders: BestellungDTO[] =[];
+    function optimizeOrders() {
+        const optimizedOrders: BestellungDTO[] = [];
         initialisierteKaufteile.forEach(Kaufteil => {
-            const verbraucht = checkWhenRestbestandExhausted(periode,Kaufteil)
+            const verbraucht = checkWhenRestbestandExhausted(periode, Kaufteil)
             const lieferdauer = (Kaufteil.lieferzeit + Kaufteil.lieferzeitAbweichung) / 5 + 1
             let order;
-            if(lieferdauer > verbraucht && verbraucht != 5)
-            {
-              order = new BestellungDTO(Kaufteil.id,BestellTyp.EIL, getOptimaleBestellmenge(Kaufteil), periode)
-            } else if( lieferdauer <= verbraucht && verbraucht != 5){
-                order = new BestellungDTO(Kaufteil.id,BestellTyp.NORMAL, getOptimaleBestellmenge(Kaufteil), periode)
+            if (lieferdauer > verbraucht && verbraucht != 5) {
+                order = new BestellungDTO(Kaufteil.id, BestellTyp.EIL, getOptimaleBestellmengeEil(Kaufteil), periode)
+            } else if (lieferdauer <= verbraucht && verbraucht != 5) {
+                order = new BestellungDTO(Kaufteil.id, BestellTyp.NORMAL, getOptimaleBestellmenge(Kaufteil), periode)
             } else {
-                order = new BestellungDTO(Kaufteil.id,BestellTyp.KEINE, 0, periode)
+                order = new BestellungDTO(Kaufteil.id, BestellTyp.KEINE, 0, periode)
             }
             optimizedOrders[Kaufteil.id] = order;
         });
@@ -235,39 +239,39 @@ export function Kaufteildisposition() {
 
             <Table>
                 <thead>
-                    <tr>
-                        <th>{t('kaufteildispo.productionProgram')}</th>
-                    </tr>
-                    <tr>
-                        <th>{t('kaufteildispo.bike')}</th>
-                        <th>{t('kaufteildispo.periodDemand')} {periode}</th>
-                        <th>{t('kaufteildispo.periodDemand')} {periode + 1}</th>
-                        <th>{t('kaufteildispo.periodDemand')} {periode + 2}</th>
-                        <th>{t('kaufteildispo.periodDemand')} {periode + 3}</th>
-                    </tr>
+                <tr>
+                    <th>{t('kaufteildispo.productionProgram')}</th>
+                </tr>
+                <tr>
+                    <th>{t('kaufteildispo.bike')}</th>
+                    <th>{t('kaufteildispo.periodDemand')} {periode}</th>
+                    <th>{t('kaufteildispo.periodDemand')} {periode + 1}</th>
+                    <th>{t('kaufteildispo.periodDemand')} {periode + 2}</th>
+                    <th>{t('kaufteildispo.periodDemand')} {periode + 3}</th>
+                </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <th>P1</th>
-                        <th>{produktionsPlan.p1ProduktionWoche0}</th>
-                        <th>{produktionsPlan.p1ProduktionWoche1}</th>
-                        <th>{produktionsPlan.p1ProduktionWoche2}</th>
-                        <th>{produktionsPlan.p1ProduktionWoche3}</th>
-                    </tr>
-                    <tr>
-                        <th>P2</th>
-                        <th>{produktionsPlan.p2ProduktionWoche0}</th>
-                        <th>{produktionsPlan.p2ProduktionWoche1}</th>
-                        <th>{produktionsPlan.p2ProduktionWoche2}</th>
-                        <th>{produktionsPlan.p2ProduktionWoche3}</th>
-                    </tr>
-                    <tr>
-                        <th>P3</th>
-                        <th>{produktionsPlan.p3ProduktionWoche0}</th>
-                        <th>{produktionsPlan.p3ProduktionWoche1}</th>
-                        <th>{produktionsPlan.p3ProduktionWoche2}</th>
-                        <th>{produktionsPlan.p3ProduktionWoche3}</th>
-                    </tr>
+                <tr>
+                    <th>P1</th>
+                    <th>{produktionsPlan.p1ProduktionWoche0}</th>
+                    <th>{produktionsPlan.p1ProduktionWoche1}</th>
+                    <th>{produktionsPlan.p1ProduktionWoche2}</th>
+                    <th>{produktionsPlan.p1ProduktionWoche3}</th>
+                </tr>
+                <tr>
+                    <th>P2</th>
+                    <th>{produktionsPlan.p2ProduktionWoche0}</th>
+                    <th>{produktionsPlan.p2ProduktionWoche1}</th>
+                    <th>{produktionsPlan.p2ProduktionWoche2}</th>
+                    <th>{produktionsPlan.p2ProduktionWoche3}</th>
+                </tr>
+                <tr>
+                    <th>P3</th>
+                    <th>{produktionsPlan.p3ProduktionWoche0}</th>
+                    <th>{produktionsPlan.p3ProduktionWoche1}</th>
+                    <th>{produktionsPlan.p3ProduktionWoche2}</th>
+                    <th>{produktionsPlan.p3ProduktionWoche3}</th>
+                </tr>
                 </tbody>
             </Table>
 
@@ -275,38 +279,38 @@ export function Kaufteildisposition() {
             {orders !== undefined && (
                 <Table>
                     <thead>
-                        <tr>
-                            <th>{t('kaufteildispo.executedOrders')}</th>
-                        </tr>
-                        <tr>
-                            <th>{t('kaufteildispo.purchasePart')}</th>
-                            <th>{t('kaufteildispo.deliveryTimeDays')}</th>
-                            <th>{t('kaufteildispo.deviationDays')}</th>
-                            <th>{t('kaufteildispo.stock')}</th>
-                            <th>{t('kaufteildispo.totalDemand')}</th>
-                            <th>{t('kaufteildispo.order')}</th>
-                            <th>{t('kaufteildispo.amount')}</th>
-                            <th>{t('kaufteildispo.orderPeriod')}</th>
-                        </tr>
+                    <tr>
+                        <th>{t('kaufteildispo.executedOrders')}</th>
+                    </tr>
+                    <tr>
+                        <th>{t('kaufteildispo.purchasePart')}</th>
+                        <th>{t('kaufteildispo.deliveryTimeDays')}</th>
+                        <th>{t('kaufteildispo.deviationDays')}</th>
+                        <th>{t('kaufteildispo.stock')}</th>
+                        <th>{t('kaufteildispo.totalDemand')}</th>
+                        <th>{t('kaufteildispo.order')}</th>
+                        <th>{t('kaufteildispo.amount')}</th>
+                        <th>{t('kaufteildispo.orderPeriod')}</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        {initialisierteKaufteile.map(kaufteil => {
-                            const id = kaufteil.id;
-                            if (alteBestellungen[id] !== undefined) {
-                                return (
-                                    <tr key={id}>
-                                        <td>{id}</td>
-                                        <td>{kaufteil.lieferzeit}</td>
-                                        <td>{kaufteil.lieferzeitAbweichung}</td>
-                                        <td>{kaufteil.restbestandVorperiode}</td>
-                                        <td>{getGesamtBedarf(kaufteil)}</td>
-                                        <td><b>{alteBestellungen[id].typ}</b></td>
-                                        <td><b>{alteBestellungen[id].menge}</b></td>
-                                        <td>{alteBestellungen[id].bestellPeriode}</td>
-                                    </tr>
-                                );
-                            }
-                        })}
+                    {initialisierteKaufteile.map(kaufteil => {
+                        const id = kaufteil.id;
+                        if (alteBestellungen[id] !== undefined) {
+                            return (
+                                <tr key={id}>
+                                    <td>{id}</td>
+                                    <td>{kaufteil.lieferzeit}</td>
+                                    <td>{kaufteil.lieferzeitAbweichung}</td>
+                                    <td>{kaufteil.restbestandVorperiode}</td>
+                                    <td>{getGesamtBedarf(kaufteil)}</td>
+                                    <td><b>{alteBestellungen[id].typ}</b></td>
+                                    <td><b>{alteBestellungen[id].menge}</b></td>
+                                    <td>{alteBestellungen[id].bestellPeriode}</td>
+                                </tr>
+                            );
+                        }
+                    })}
                     </tbody>
                 </Table>
             )}
@@ -321,80 +325,81 @@ export function Kaufteildisposition() {
 
             <Table>
                 <thead>
-                    <tr>
-                        <th>{t('kaufteildispo.newOrders')}</th>
-                    </tr>
-                    <tr>
-                        <th>{t('kaufteildispo.purchasePart')}</th>
-                        <th>{t('kaufteildispo.deliveryTimeDays')} / {t('kaufteildispo.deviationDays')}</th>
-                        <th>{t('kaufteildispo.usage')}</th>
-                        <th>{t('kaufteildispo.stock')}</th>
-                        <th>{t('kaufteildispo.totalDemand')}</th>
-                        <th>{t('kaufteildispo.periodDemand')}<br/>{periode} / {periode + 1} / {periode + 2} / {periode + 3}</th>
-                        <th>{t('kaufteildispo.discountAmount')}</th>
-                        <th>{t('kaufteildispo.yearlyDemand')}</th>
-                        <th>{t('kaufteildispo.optimalOrderQty')}</th>
-                        <th>{t('kaufteildispo.order')}</th>
-                        <th>{t('kaufteildispo.amount')}</th>
-                        <th>{t('kaufteildispo.orderPeriod')}</th>
-                    </tr>
+                <tr>
+                    <th>{t('kaufteildispo.newOrders')}</th>
+                </tr>
+                <tr>
+                    <th>{t('kaufteildispo.purchasePart')}</th>
+                    <th>{t('kaufteildispo.deliveryTimeDays')} / {t('kaufteildispo.deviationDays')}</th>
+                    <th>{t('kaufteildispo.usage')}</th>
+                    <th>{t('kaufteildispo.stock')}</th>
+                    <th>{t('kaufteildispo.totalDemand')}</th>
+                    <th>{t('kaufteildispo.periodDemand')}<br/>{periode} / {periode + 1} / {periode + 2} / {periode + 3}
+                    </th>
+                    <th>{t('kaufteildispo.discountAmount')}</th>
+                    <th>{t('kaufteildispo.yearlyDemand')}</th>
+                    <th>{t('kaufteildispo.optimalOrderQty')}</th>
+                    <th>{t('kaufteildispo.order')}</th>
+                    <th>{t('kaufteildispo.amount')}</th>
+                    <th>{t('kaufteildispo.orderPeriod')}</th>
+                </tr>
                 </thead>
                 <tbody>
-               {initialisierteKaufteile.map(kaufteil => {
-                const id = kaufteil.id;
-                const bestellung = bestellungen.find(b => b && b.kaufteilID === id);
+                {initialisierteKaufteile.map(kaufteil => {
+                    const id = kaufteil.id;
+                    const bestellung = bestellungen.find(b => b && b.kaufteilID === id);
 
-                return (
-                    <tr key={id}>
-                        <td>{id}</td>
-                        <td>{kaufteil.lieferzeit} / {kaufteil.lieferzeitAbweichung}</td>
-                        <td>{kaufteil.verwendungP1} / {kaufteil.verwendungP2} / {kaufteil.verwendungP3}</td>
-                        <td>{kaufteil.restbestandVorperiode}</td>
-                        <td>{getGesamtBedarf(kaufteil)}</td>
-                        <td>
-                            {getWochenBedarf(periode, kaufteil)} / {getWochenBedarf(periode + 1, kaufteil)} /
-                            {getWochenBedarf(periode + 2, kaufteil)} / {getWochenBedarf(periode + 3, kaufteil)}
-                        </td>
-                        <td>{kaufteil.diskontmenge}</td>
-                        <td>
-                            {getJahresBedarf(kaufteil)} / {(kaufteil.bestellKosten * (bestellung?.typ === BestellTyp.EIL ? 10 : 1)).toFixed(2)}€
-                            / {kaufteil.wert}€
-                            / {(LAGER_KOSTEN_SATZ * 100).toFixed(2)}%
-                        </td>
-                        <td>{getOptimaleBestellmenge(kaufteil)}</td>
-                        {/* Bestellung controls */}
-                        <td>
-                            {bestellung && (
-                                <DropdownButton title={t(bestellung.typ)} size="sm">
-                                    {Object.values(BestellTyp).map((art) => (
-                                        <Dropdown.Item
-                                            key={art}
-                                            onClick={() => setBestellung(bestellung.kaufteilID, art, bestellung.menge)}
-                                        >
-                                            {t(art)}
-                                        </Dropdown.Item>
-                                    ))}
-                                </DropdownButton>
-                            )}
-                        </td>
-                        <td>
-                            {bestellung && (
-                                <input
-                                    min={0}
-                                    type="number"
-                                    value={bestellung.menge}
-                                    onChange={(e) => {
-                                        // @ts-ignore
-                                        e.target.value = Math.abs(e.target.value);
-                                        setBestellung(bestellung.kaufteilID, bestellung.typ, Number(e.target.value));
-                                    }}
-                                />
-                            )}
-                        </td>
-                        <td>{bestellung?.bestellPeriode}</td>
-                    </tr>
-                );
-            })}
+                    return (
+                        <tr key={id}>
+                            <td>{id}</td>
+                            <td>{kaufteil.lieferzeit} / {kaufteil.lieferzeitAbweichung}</td>
+                            <td>{kaufteil.verwendungP1} / {kaufteil.verwendungP2} / {kaufteil.verwendungP3}</td>
+                            <td>{kaufteil.restbestandVorperiode}</td>
+                            <td>{getGesamtBedarf(kaufteil)}</td>
+                            <td>
+                                {getWochenBedarf(periode, kaufteil)} / {getWochenBedarf(periode + 1, kaufteil)} /
+                                {getWochenBedarf(periode + 2, kaufteil)} / {getWochenBedarf(periode + 3, kaufteil)}
+                            </td>
+                            <td>{kaufteil.diskontmenge}</td>
+                            <td>
+                                {getJahresBedarf(kaufteil)} / {(kaufteil.bestellKosten * (bestellung?.typ === BestellTyp.EIL ? 10 : 1)).toFixed(2)}€
+                                / {kaufteil.wert}€
+                                / {(LAGER_KOSTEN_SATZ * 100).toFixed(2)}%
+                            </td>
+                            <td>{getOptimaleBestellmenge(kaufteil)}</td>
+                            {/* Bestellung controls */}
+                            <td>
+                                {bestellung && (
+                                    <DropdownButton title={t(bestellung.typ)} size="sm">
+                                        {Object.values(BestellTyp).map((art) => (
+                                            <Dropdown.Item
+                                                key={art}
+                                                onClick={() => setBestellung(bestellung.kaufteilID, art, bestellung.menge)}
+                                            >
+                                                {t(art)}
+                                            </Dropdown.Item>
+                                        ))}
+                                    </DropdownButton>
+                                )}
+                            </td>
+                            <td>
+                                {bestellung && (
+                                    <input
+                                        min={0}
+                                        type="number"
+                                        value={bestellung.menge}
+                                        onChange={(e) => {
+                                            // @ts-ignore
+                                            e.target.value = Math.abs(e.target.value);
+                                            setBestellung(bestellung.kaufteilID, bestellung.typ, Number(e.target.value));
+                                        }}
+                                    />
+                                )}
+                            </td>
+                            <td>{bestellung?.bestellPeriode}</td>
+                        </tr>
+                    );
+                })}
                 </tbody>
             </Table>
 
