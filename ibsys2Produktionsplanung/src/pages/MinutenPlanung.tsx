@@ -29,7 +29,7 @@ export const MinutenPlanung = () => {
   const input = generalStore?.input?.results;
   const output = generalStore?.output?.input;
   const wartelistenArbeitsplatz = input?.waitinglistworkstations.workplace;
-  const ordersInWork = input?.ordersinwork?.workplace;
+//   const ordersInWork = input?.ordersinwork?.workplace;
 
   const auftraege = output?.productionlist ?? {
     production: [{ article: 0, quantity: 0 }],
