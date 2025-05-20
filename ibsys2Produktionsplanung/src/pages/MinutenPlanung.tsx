@@ -29,6 +29,8 @@ export const MinutenPlanung = () => {
   const input = generalStore?.input?.results;
   const output = generalStore?.output?.input;
   const wartelistenArbeitsplatz = input?.waitinglistworkstations.workplace;
+  const ordersInWork = input?.ordersinwork?.workplace;
+
   const auftraege = output?.productionlist ?? {
     production: [{ article: 0, quantity: 0 }],
   };
@@ -87,6 +89,88 @@ export const MinutenPlanung = () => {
 
   const [speicherInfo, setSpeicherInfo] = useState(false);
 
+//neu
+/* const missingWorkplaces =
+  input?.waitingliststock?.missingpart?.flatMap((missingPart) => {
+    const workplaces = Array.isArray(missingPart.workplace)
+      ? missingPart.workplace
+      : missingPart.workplace
+      ? [missingPart.workplace]
+      : [];
+
+    return workplaces.map((workplace) => ({
+      missingPartId: missingPart.id,
+      id: workplace.id,
+      timeneed: workplace.timeneed,
+    }));
+  }) ?? []; */
+
+  const missingWorkplaces = useMemo(() => {
+  return (
+    input?.waitingliststock?.missingpart?.flatMap((missingPart) => {
+      const workplaces = Array.isArray(missingPart.workplace)
+        ? missingPart.workplace
+        : missingPart.workplace
+        ? [missingPart.workplace]
+        : [];
+
+      return workplaces.map((workplace) => ({
+        missingPartId: missingPart.id,
+        id: workplace.id,
+        timeneed: workplace.timeneed,
+      }));
+    }) ?? []
+  );
+}, [input?.waitingliststock]);
+
+
+//neu2
+const alleOrdersInWork = useMemo(() => {
+  const rawOrders = input?.ordersinwork?.workplace;
+  if (!rawOrders) return [];
+
+  const ordersArray = Array.isArray(rawOrders) ? rawOrders : [rawOrders];
+
+  return ordersArray.map((order) => ({
+    id: order.id,
+    period: order.period,
+    order: order.order,
+    batch: order.batch,
+    item: order.item,
+    amount: order.amount,
+    timeNeed: order.timeneed,
+  }));
+}, [input?.ordersinwork]);
+
+useEffect(() => {
+  const summedRueckstand = Array(15).fill(0);
+
+  // 1. Aus WaitingList
+  alleWaitingListEintraege?.forEach((entry) => {
+    const index = Number(entry.arbeitsplatzId) - 1;
+    if (index >= 0 && index < 15) {
+      summedRueckstand[index] += Number(entry.timeNeed) || 0;
+    }
+  });
+
+  // 2. Aus missingWorkplaces
+  missingWorkplaces?.forEach((entry) => {
+    const index = Number(entry.id) - 1;
+    if (index >= 0 && index < 15) {
+      summedRueckstand[index] += Number(entry.timeneed) || 0;
+    }
+  });
+
+  // 3. Aus OrdersInWork
+  alleOrdersInWork?.forEach((entry) => {
+    const index = Number(entry.id) - 1;
+    if (index >= 0 && index < 15) {
+      summedRueckstand[index] += Number(entry.timeNeed) || 0;
+    }
+  });
+
+  setRueckstandKapa(summedRueckstand);
+}, [alleWaitingListEintraege, missingWorkplaces, alleOrdersInWork]);
   //Import der Wartelisten mit den einzelnen wartenden Teilen, für die Rüstrückstandszeit
 
   //Funktion für den Export der XML-Daten:
@@ -583,7 +667,7 @@ export const MinutenPlanung = () => {
           <tr>
             <th>{t("Bezeichnung")}</th>
             <th>{t("Typ")}</th>
-            <th>{t("TeilNr.")}Nr</th>
+            <th>{t("Teil-Nr.")}</th>
             <th>{t("Auftragsmenge")}</th>
             {Array.from({ length: 15 }).map((_, i) => (
               <th colSpan={2} key={i}>{`${t("Platz")} ${i + 1}`}</th>
@@ -795,55 +879,104 @@ export const MinutenPlanung = () => {
           </tr>
           <tr>
             <td colSpan={34}>
-              <h4 className="mt-4">
-                {t("Warteliste je Arbeitsplatz (timeNeed je Teil)")}
-              </h4>
-              <Table
-                // bordered size="sm"
-                striped
-                bordered
-                hover
-                className="table-waitinglist"
-              >
-                <thead>
-                  <tr>
-                    <th>{t("Arbeitsplatz")}</th>
-                    <th>{t("Teil-Nr.")}</th>
-                    <th>{t("Periode")}</th>
-                    <th>{t("Auftrag")}</th>
-                    <th>{t("Batch")}</th>
-                    <th>{t("Menge")}</th>
-                    <th>{t("timeNeed")}</th>
-                    <th>{t("Rüstzeit")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {alleWaitingListEintraegeMitRuestzeit?.map((entry, index) => (
-                    <tr key={index}>
-                      <td className="text-center">{entry.arbeitsplatzId}</td>
-                      <td className="text-center">{entry.item}</td>
-                      <td className="text-center">{entry.period}</td>
-                      <td className="text-center">{entry.order}</td>
-                      <td className="text-center">
-                        {entry.firstbatch} - {entry.lastbatch}
-                      </td>
-                      <td className="text-center">{entry.amount}</td>
-                      <td className="text-center">{entry.timeNeed}</td>
-                      <td className="text-center">{entry.zeit}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
+              
             </td>
           </tr>
         </tbody>
       </Table>
 
+      <div className="table-wrapper p-3 mt-4">
+  <h2 className="mt-4">
+    {t("Wartelisten je Arbeitsplatz")}
+  </h2>
+
+  <h4 className="mt-4">
+    {t("Warteliste je Arbeitsplatz (timeNeed je Teil)")}
+  </h4>
+  <Table striped bordered hover className="table-waitinglist">
+    <thead>
+      <tr>
+        <th>{t("Arbeitsplatz")}</th>
+        <th>{t("Teil-Nr.")}</th>
+        <th>{t("Periode")}</th>
+        <th>{t("Auftrag")}</th>
+        <th>{t("Batch")}</th>
+        <th>{t("Menge")}</th>
+        <th>{t("timeNeed")}</th>
+        <th>{t("Rüstzeit")}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {alleWaitingListEintraegeMitRuestzeit?.map((entry, index) => (
+        <tr key={index}>
+          <td className="text-center">{entry.arbeitsplatzId}</td>
+          <td className="text-center">{entry.item}</td>
+          <td className="text-center">{entry.period}</td>
+          <td className="text-center">{entry.order}</td>
+          <td className="text-center">
+            {entry.firstbatch} - {entry.lastbatch}
+          </td>
+          <td className="text-center">{entry.amount}</td>
+          <td className="text-center">{entry.timeNeed}</td>
+          <td className="text-center">{entry.zeit}</td>
+        </tr>
+      ))}
+    </tbody>
+  </Table>
+
+  <h4 className="mt-5">{t("Fehlteile nach Arbeitsplatz (MissingWorkplace)")}</h4>
+  <Table striped bordered hover>
+    <thead>
+      <tr>
+        <th>{t("Missing Part ID")}</th>
+        <th>{t("Arbeitsplatz")}</th>
+        <th>{t("Benötigte Zeit (min)")}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {missingWorkplaces.map((entry, index) => (
+        <tr key={index}>
+          <td>{entry.missingPartId}</td>
+          <td>{entry.id}</td>
+          <td>{entry.timeneed}</td>
+        </tr>
+      ))}
+    </tbody>
+  </Table>
+
+  <h4 className="mt-5">{t("Aufträge in Arbeit")}</h4>
+  <Table striped bordered hover className="minuten-tabelle mt-3">
+    <thead>
+      <tr>
+        <th>{t("Arbeitsplatz")}</th>
+        <th>{t("Periode")}</th>
+        <th>{t("Auftrag")}</th>
+        <th>{t("Charge")}</th>
+        <th>{t("Teil-Nr.")}</th>
+        <th>{t("Menge")}</th>
+        <th>{t("Benötigte Zeit (min)")}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {alleOrdersInWork.map((auftrag, index) => (
+        <tr key={index}>
+          <td>{auftrag.id}</td>
+          <td>{auftrag.period}</td>
+          <td>{auftrag.order}</td>
+          <td>{auftrag.batch}</td>
+          <td>{auftrag.item}</td>
+          <td>{auftrag.amount}</td>
+          <td>{auftrag.timeNeed}</td>
+        </tr>
+      ))}
+    </tbody>
+  </Table>
+</div>
       <br />
       {speicherInfo && (
         <div className="text-center mt-3">
           <div className="alert alert-primary" role="alert">
-            Arbeitszeiten erfolgreich gespeichert.
+            {t("Arbeitszeiten erfolgreich gespeichert")}
           </div>
         </div>
       )}
