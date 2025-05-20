@@ -26,11 +26,186 @@ export const MinutenPlanung = () => {
 
     const {generalStore, setGeneralStoreData} = useGeneralStore();
 
+<<<<<<< HEAD
+  const input = generalStore?.input?.results;
+  const output = generalStore?.output?.input;
+  const wartelistenArbeitsplatz = input?.waitinglistworkstations.workplace;
+  const ordersInWork = input?.ordersinwork?.workplace;
+
+  const auftraege = output?.productionlist ?? {
+    production: [{ article: 0, quantity: 0 }],
+  };
+
+  const alleWaitingListEintraege = wartelistenArbeitsplatz?.flatMap(
+    (workplace) => {
+      const waitingList = workplace.waitinglist;
+
+      const liste = Array.isArray(waitingList)
+        ? waitingList
+        : waitingList
+        ? [waitingList]
+        : [];
+
+      return liste.map((entry) => ({
+        arbeitsplatzId: workplace.id,
+        period: entry.period,
+        order: entry.order,
+        item: entry.item,
+        timeNeed: entry.timeneed,
+        amount: entry.amount,
+        firstbatch: entry.firstbatch,
+        lastbatch: entry.lastbatch,
+      }));
+    }
+  );
+
+  const alleWaitingListEintraegeMitRuestzeit = useMemo(() => {
+    return alleWaitingListEintraege?.map((entry) => {
+      const key = `${entry.arbeitsplatzId}_${entry.item}`;
+      const zeit = ruestzeitMap.get(key) ?? 0;
+      return {
+        ...entry,
+        zeit,
+      };
+    });
+  }, [alleWaitingListEintraege]);
+  //Funktion für den Import der XML-Daten
+  useEffect(() => {
+    if (!wartelistenArbeitsplatz) return;
+
+    const rueckstandArray = Array(15).fill(0);
+
+    wartelistenArbeitsplatz.forEach((workplace) => {
+      const { id, timeneed } = workplace;
+
+      const arrayIndex = id - 1;
+
+      if (arrayIndex >= 0 && arrayIndex < 15) {
+        rueckstandArray[arrayIndex] = Number(timeneed) || 0; // ← Fix hier
+      }
+    });
+
+    setRueckstandKapa(rueckstandArray);
+  }, [wartelistenArbeitsplatz]);
+
+  const [speicherInfo, setSpeicherInfo] = useState(false);
+
+//neu
+/* const missingWorkplaces =
+  input?.waitingliststock?.missingpart?.flatMap((missingPart) => {
+    const workplaces = Array.isArray(missingPart.workplace)
+      ? missingPart.workplace
+      : missingPart.workplace
+      ? [missingPart.workplace]
+      : [];
+
+    return workplaces.map((workplace) => ({
+      missingPartId: missingPart.id,
+      id: workplace.id,
+      timeneed: workplace.timeneed,
+    }));
+  }) ?? []; */
+
+  const missingWorkplaces = useMemo(() => {
+  return (
+    input?.waitingliststock?.missingpart?.flatMap((missingPart) => {
+      const workplaces = Array.isArray(missingPart.workplace)
+        ? missingPart.workplace
+        : missingPart.workplace
+        ? [missingPart.workplace]
+        : [];
+
+      return workplaces.map((workplace) => ({
+        missingPartId: missingPart.id,
+        id: workplace.id,
+        timeneed: workplace.timeneed,
+      }));
+    }) ?? []
+  );
+}, [input?.waitingliststock]);
+
+
+//neu2
+const alleOrdersInWork = useMemo(() => {
+  const rawOrders = input?.ordersinwork?.workplace;
+  if (!rawOrders) return [];
+
+  const ordersArray = Array.isArray(rawOrders) ? rawOrders : [rawOrders];
+
+  return ordersArray.map((order) => ({
+    id: order.id,
+    period: order.period,
+    order: order.order,
+    batch: order.batch,
+    item: order.item,
+    amount: order.amount,
+    timeNeed: order.timeneed,
+  }));
+}, [input?.ordersinwork]);
+
+useEffect(() => {
+  const summedRueckstand = Array(15).fill(0);
+
+  // 1. Aus WaitingList
+  alleWaitingListEintraege?.forEach((entry) => {
+    const index = Number(entry.arbeitsplatzId) - 1;
+    if (index >= 0 && index < 15) {
+      summedRueckstand[index] += Number(entry.timeNeed) || 0;
+    }
+  });
+
+  // 2. Aus missingWorkplaces
+  missingWorkplaces?.forEach((entry) => {
+    const index = Number(entry.id) - 1;
+    if (index >= 0 && index < 15) {
+      summedRueckstand[index] += Number(entry.timeneed) || 0;
+    }
+  });
+
+  // 3. Aus OrdersInWork
+  alleOrdersInWork?.forEach((entry) => {
+    const index = Number(entry.id) - 1;
+    if (index >= 0 && index < 15) {
+      summedRueckstand[index] += Number(entry.timeNeed) || 0;
+    }
+  });
+
+  setRueckstandKapa(summedRueckstand);
+}, [alleWaitingListEintraege, missingWorkplaces, alleOrdersInWork]);
+  //Import der Wartelisten mit den einzelnen wartenden Teilen, für die Rüstrückstandszeit
+
+  //Funktion für den Export der XML-Daten:
+  function save() {
+    const workingTimes: WorkingTime[] = benoetigteZusatzschichten.map(
+      (shift, index) => {
+        const overtime =
+          benoetigteUeberstunden[index] === ""
+            ? 0
+            : index == 4
+            ? 0
+            : Math.ceil(Number(benoetigteUeberstunden[index]));
+        const shiftVal = shift === "" ? 0 : index == 4 ? 0 : Number(shift);
+
+        return {
+          station: index + 1,
+          shift: shiftVal,
+          overtime: overtime,
+        };
+      }
+    );
+
+    const updatedOutput = {
+      ...(output ?? {}),
+      workingtimelist: {
+        workingtime: workingTimes,
+      },
+=======
     const input = generalStore?.input?.results;
     const output = generalStore?.output?.input;
     const wartelistenArbeitsplatz = input?.waitinglistworkstations.workplace;
     const auftraege = output?.productionlist ?? {
         production: [{article: 0, quantity: 0}],
+>>>>>>> main
     };
 
     const alleWaitingListEintraege = wartelistenArbeitsplatz?.flatMap(
@@ -522,6 +697,48 @@ export const MinutenPlanung = () => {
     const [benoetigteUeberstunden, setBenoetigteUeberstunden] =
         useState<(number | "")[]>(initialUeberstunde);
 
+<<<<<<< HEAD
+      <br />
+      <Table striped bordered hover className="minuten-tabelle">
+        <thead>
+          <tr>
+            <th>{t("Bezeichnung")}</th>
+            <th>{t("Typ")}</th>
+            <th>{t("Teil-Nr.")}</th>
+            <th>{t("Auftragsmenge")}</th>
+            {Array.from({ length: 15 }).map((_, i) => (
+              <th colSpan={2} key={i}>{`${t("Platz")} ${i + 1}`}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {zeilen.map((zeile) => (
+            <tr key={zeile.id}>
+              <td>{zeile.bezeichnung}</td>
+              <td>{zeile.typ}</td>
+              <td>{zeile.sachNr}</td>
+              <td>{zeile.auftragsmenge}</td>
+              {zeile.minutenLinks.map((min, i) => (
+                <React.Fragment key={i}>
+                  <td className="text-center">{min !== "" ? min : ""}</td>
+                  <td className="text-center">
+                    {min !== "" ? min * zeile.auftragsmenge : ""}
+                  </td>
+                </React.Fragment>
+              ))}
+            </tr>
+          ))}
+          <tr id="kapabedarf_neu" className="label-fett">
+            <td colSpan={4} className="align-middle text-center">
+              {t("Kapazitätsbedarf (neu)")}
+            </td>
+            {kapaBedarf.map((wert, i) => (
+              <td colSpan={2} key={i} className="text-center">
+                {wert}
+              </td>
+            ))}
+          </tr>
+=======
     useEffect(() => {
         setBenoetigteUeberstunden((prev) => {
             // Apply threshold logic to each item in schichtUndÜberstund
@@ -536,6 +753,7 @@ export const MinutenPlanung = () => {
                 }
                 return "";
             });
+>>>>>>> main
 
             if (JSON.stringify(prev) !== JSON.stringify(updated)) {
                 return updated;
@@ -579,6 +797,177 @@ export const MinutenPlanung = () => {
         <div className="container-fluid mt-4">
             <h1>{t("Minutenplanung")}</h1>
 
+<<<<<<< HEAD
+          <tr id="schicht_u_überst" className="label-fett">
+            <td colSpan={4} className="align-middle text-center">
+              {t("Schichten und Überstunden / Überzeit pro Tag")}
+            </td>
+            {schichtUndÜberstund.map((wert, i) => {
+              // Klasse basierend auf dem Wert bestimmen
+              let cellClass = "text-center";
+              if (typeof wert === "number") {
+                cellClass +=
+                  wert < 0 ? " bg-success text-white" : " bg-danger text-white";
+              }
+
+              return (
+                <td colSpan={2} key={i} className={cellClass}>
+                  {typeof wert == "number" ? Math.ceil(wert) : ""}
+                </td>
+              );
+            })}
+          </tr>
+          {/* Abstand von 1cm per Leerzeile simulieren */}
+          <tr>
+            <td
+              colSpan={34}
+              style={{
+                height: "1cm",
+                background: "transparent",
+                border: "none",
+              }}
+            />
+          </tr>
+
+          <tr id="benötigte_überstunden" className="label-fett">
+            <td colSpan={4} className="text-center">
+              {t("Benötigte Überstunden / pro Tag")}
+            </td>
+
+            {benoetigteUeberstunden.map((wert, i) => {
+              return (
+                <td colSpan={2} key={i}>
+                  {typeof wert == "number" ? Math.ceil(wert) : ""}
+                </td>
+              );
+            })}
+          </tr>
+
+          <tr id="benötigte_zusatzschichten" className="label-fett">
+            <td colSpan={4} className="text-center">
+              {t("Benötigte Zusatzschichten")}
+            </td>
+
+            {benoetigteZusatzschichten.map((wert, i) => {
+              return (
+                <td colSpan={2} key={i}>
+                  {typeof wert == "number" ? Math.ceil(i === 4 ? 0 : wert) : ""}
+                </td>
+              );
+            })}
+          </tr>
+          <tr>
+            <td
+              colSpan={34}
+              style={{
+                height: "1cm",
+                background: "transparent",
+                border: "none",
+              }}
+            />
+          </tr>
+          <tr>
+            <td colSpan={34}>
+              
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+
+      <div className="table-wrapper p-3 mt-4">
+  <h2 className="mt-4">
+    {t("Wartelisten je Arbeitsplatz")}
+  </h2>
+
+  <h4 className="mt-4">
+    {t("Warteliste je Arbeitsplatz (timeNeed je Teil)")}
+  </h4>
+  <Table striped bordered hover className="table-waitinglist">
+    <thead>
+      <tr>
+        <th>{t("Arbeitsplatz")}</th>
+        <th>{t("Teil-Nr.")}</th>
+        <th>{t("Periode")}</th>
+        <th>{t("Auftrag")}</th>
+        <th>{t("Batch")}</th>
+        <th>{t("Menge")}</th>
+        <th>{t("timeNeed")}</th>
+        <th>{t("Rüstzeit")}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {alleWaitingListEintraegeMitRuestzeit?.map((entry, index) => (
+        <tr key={index}>
+          <td className="text-center">{entry.arbeitsplatzId}</td>
+          <td className="text-center">{entry.item}</td>
+          <td className="text-center">{entry.period}</td>
+          <td className="text-center">{entry.order}</td>
+          <td className="text-center">
+            {entry.firstbatch} - {entry.lastbatch}
+          </td>
+          <td className="text-center">{entry.amount}</td>
+          <td className="text-center">{entry.timeNeed}</td>
+          <td className="text-center">{entry.zeit}</td>
+        </tr>
+      ))}
+    </tbody>
+  </Table>
+
+  <h4 className="mt-5">{t("Fehlteile nach Arbeitsplatz (MissingWorkplace)")}</h4>
+  <Table striped bordered hover>
+    <thead>
+      <tr>
+        <th>{t("Missing Part ID")}</th>
+        <th>{t("Arbeitsplatz")}</th>
+        <th>{t("Benötigte Zeit (min)")}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {missingWorkplaces.map((entry, index) => (
+        <tr key={index}>
+          <td>{entry.missingPartId}</td>
+          <td>{entry.id}</td>
+          <td>{entry.timeneed}</td>
+        </tr>
+      ))}
+    </tbody>
+  </Table>
+
+  <h4 className="mt-5">{t("Aufträge in Arbeit")}</h4>
+  <Table striped bordered hover className="minuten-tabelle mt-3">
+    <thead>
+      <tr>
+        <th>{t("Arbeitsplatz")}</th>
+        <th>{t("Periode")}</th>
+        <th>{t("Auftrag")}</th>
+        <th>{t("Charge")}</th>
+        <th>{t("Teil-Nr.")}</th>
+        <th>{t("Menge")}</th>
+        <th>{t("Benötigte Zeit (min)")}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {alleOrdersInWork.map((auftrag, index) => (
+        <tr key={index}>
+          <td>{auftrag.id}</td>
+          <td>{auftrag.period}</td>
+          <td>{auftrag.order}</td>
+          <td>{auftrag.batch}</td>
+          <td>{auftrag.item}</td>
+          <td>{auftrag.amount}</td>
+          <td>{auftrag.timeNeed}</td>
+        </tr>
+      ))}
+    </tbody>
+  </Table>
+</div>
+      <br />
+      {speicherInfo && (
+        <div className="text-center mt-3">
+          <div className="alert alert-primary" role="alert">
+            {t("Arbeitszeiten erfolgreich gespeichert")}
+          </div>
+=======
             <br/>
             <Table striped bordered hover className="minuten-tabelle">
                 <thead>
@@ -852,6 +1241,7 @@ export const MinutenPlanung = () => {
             <Button className="Button" onClick={save}>
                 {t("Speichern")}
             </Button>
+>>>>>>> main
         </div>
     );
 };

@@ -7,7 +7,7 @@ export type XMLInput = {
     futureinwardstockmovement: FutureInwardStockMovement;
     idletimecosts: IdleTimeCosts;
     waitinglistworkstations: WaitingListWorkstations;
-    waitinglistdtock: WaitingListStock;
+    waitingliststock: WaitingListStock;
     ordersinwork: OrdersInWork;
     completedorders: CompletedOrders;
     cycletimes: CycleTimes;
@@ -124,7 +124,7 @@ type OrdersWorkplace = {
   batch: number;
   item: number;
   amount: number;
-  timeNeed: number;
+  timeneed: number;
 };
 
 type CompletedOrders = {

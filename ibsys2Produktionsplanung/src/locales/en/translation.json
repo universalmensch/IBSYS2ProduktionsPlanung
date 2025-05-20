@@ -35,7 +35,7 @@
   "Schichten und Überstunden / Überzeit pro Tag": "Shifts and Overtime / Overtime per Day",
   "Benötigte Überstunden / pro Tag": "Required Overtime / per Day",
   "Benötigte Zusatzschichten": "Required Shifts",
-  "Warteliste je Arbeitsplatz (timeNeed je Teil)": "Waiting List per Workstation (Timeneed per Part)",
+  "Warteliste je Arbeitsplatz (timeNeed je Teil)": "Timeneed per Part",
   "Arbeitsplatz": "Workstation",
   "Periode": "Period",
   "Auftrag": "Order",
@@ -44,6 +44,15 @@
   "timeNeed": "Timeneed",
   "Rüstzeit": "Setup Time",
   "Speichern": "Save",
+
+"Wartelisten je Arbeitsplatz": "Waiting lists per workstation",
+  "Fehlteile nach Arbeitsplatz (MissingWorkplace)": "Missing parts by workstation",
+  "Missing Part ID": "Missing part no.",
+  "Benötigte Zeit (min)": "Required time",
+  "Aufträge in Arbeit": "Orders in progress",
+  "Charge": "Batch",
+  "Arbeitszeiten erfolgreich gespeichert": "Working hours saved successfully",
+
   "SpeichernSucess": "Orders successfully saved",
   "teil": {
     "hinterrad": "Rear Wheel",

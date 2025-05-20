@@ -34,7 +34,7 @@
   "Schichten und Überstunden / Überzeit pro Tag": "Ca làm và làm thêm giờ / mỗi ngày",
   "Benötigte Überstunden / pro Tag": "Số giờ làm thêm cần thiết / mỗi ngày",
   "Benötigte Zusatzschichten": "Số ca làm thêm cần thiết",
-  "Warteliste je Arbeitsplatz (timeNeed je Teil)": "Danh sách chờ theo trạm làm việc (thời gian chờ theo linh kiện)",
+  "Warteliste je Arbeitsplatz (timeNeed je Teil)": "Thời gian chờ theo linh kiện",
   "Arbeitsplatz": "Trạm làm việc",
   "Periode": "Kỳ",
   "Auftrag": "Đơn hàng",
@@ -43,6 +43,15 @@
   "timeNeed": "Thời gian chờ",
   "Rüstzeit": "Thời gian chuẩn bị",
   "Speichern": "Lưu",
+
+  "Wartelisten je Arbeitsplatz": "Danh sách chờ theo nơi làm việc",
+  "Fehlteile nach Arbeitsplatz (MissingWorkplace)": "Bộ phận thiếu theo nơi làm việc",
+  "Missing Part ID": "Mã bộ phận thiếu",
+  "Benötigte Zeit (min)": "Thời gian cần thiết (phút)",
+  "Aufträge in Arbeit": "Đơn hàng đang xử lý",
+  "Charge": "Lô",
+  "Arbeitszeiten erfolgreich gespeichert": "Thời gian làm việc đã được lưu thành công",
+
   "SpeichernSucess": "Lưu đơn hàng thành công.",
   "teil": {
     "hinterrad": "Bánh sau",
